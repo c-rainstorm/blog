@@ -8,10 +8,15 @@
 
 ```
 .
-|-- [2017-01-06]  LICENSE
-|-- [2017-01-17]  plans
-|   `-- [2017-01-17]  寒假学习计划.md
-`-- [2017-01-17]  README.md
+|-- java-api
+|   `-- java.lang.md
+|-- LICENSE
+|-- plans
+|   `-- 寒假学习计划.md
+|-- reading-notes
+|   |-- Effective-Java.md
+|   `-- 设计模式之禅.md
+`-- README.md
 ```
 
 ## Tips:
