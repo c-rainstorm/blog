@@ -32,6 +32,65 @@
     - `isEnum()  // 是否是枚举类`
     - `getName() // 获取全类名`
 
+## `Void`
+
+- `Void.TYPE == void`
+
+## 封装类型
+
+### 共性
+
+- 获取类类型 `Double.TYPE`
+- 包含方法
+    1. 基本类型转封装类型
+        - 构造器
+        - `valueOf()`
+    1. 字符串转封装类型
+        - 构造器
+        - `valueOf()`
+        - `parseXXX()`
+    1. 封装类型转基本类型
+        - `XXXValue()`
+    1. 封装类型转字符串
+        - `toString()`
+    1. 比较
+        - `compare(T x, T y)  // T 为基本类型`
+        - `compareTo(T another) // T 为封装类型`
+    1. 类型转换
+        - API 为我们提供了方便的转换函数。可以将 `byte`、`short`、`int`、`long`、`float`、`double` 类型的数据进行相互转换，具体的函数名请查阅 API 文档。
+    1. 进制转换
+        - `decode()` 将八进制、十进制、十六进制字符串转为相应类型（字符串格式有要求，请参考 API 文档）
+        - `toBinaryString()  // 10 --> 2`  // 以下方法只在 `Integer` 和 `Long` 中有。 
+        - `toHexString()     // 16 --> 16`    
+        - `toOctalString()   // 8 --> 10`
+
+### 特性
+
+- `Boolean`
+    - 提供了两个 `Boolean` 类型的逻辑操作（and、or、xor）
+- `Long && Integer`
+    - 位操作
+        - `highestOneBit()`。 二进制只保留最高位的 1.
+            - 负数都为 `Integer.MIN_VALUE`; 
+            - 0 为 `0`; 
+            - 正数都为 `2^n`. 例子： `Integer.highestOneBit(10) == 8`, n 为最高一个 1 的位数。
+        - `lowestOneBit()` 与上一个相对，二进制只保留最低位的 1。
+        - `numberOfLeadingZeros()` 二进制前导 0 的个数
+        - `numberOfTrailingZeros()` 二进制尾部 0 的个数
+        - `reverse()` 二进制反转
+        - `reverseBytes()` 二进制反转，以 `byte` 为单位。
+        - `rotateLeft()` 左旋
+        - `rotateRight()` 右旋
+- `Double && Float`
+    - `floatToIntBits()`  // float 数据位模式的 int 表示。  **以下两个方法在求 float 数据和 double 数据的 hashCode 时会经常使用**
+    - `doubleToLongBits()` // double 数据位模式的 long 表示
+    - `intBitsToFloat()`
+    - `longBitsToDouble()`
+    - `isFinite()` // 是有限小数
+    - `isInFinite()` // 是无穷大
+    - `isNaN()`    // 不是数
+- `Character` // TODO 对 Unicode 有更深入了解以后再来补充。
+
 ## 参考
 
 1. [极客学院- java 反射机制](http://wiki.jikexueyuan.com/project/java-reflection/)
