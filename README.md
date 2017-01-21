@@ -8,14 +8,17 @@
 
 ```
 .
-|-- java-api
-|   `-- java.lang.md
-|-- LICENSE
-|-- plans
-|   `-- 寒假学习计划.md
 |-- reading-notes
 |   |-- Effective-Java.md
+|   |-- 深入理解Java虚拟机.md
 |   `-- 设计模式之禅.md
+|-- tools
+|   `-- log4j2.md
+|-- java-api
+|   `-- java.lang.md
+|-- plans
+|   `-- 寒假学习计划.md
+|-- LICENSE
 `-- README.md
 ```
 
