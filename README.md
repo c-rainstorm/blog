@@ -10,6 +10,7 @@
 .
 |-- reading-notes
 |   |-- Effective-Java.md
+|   |-- unicodeStandard.md
 |   |-- 深入理解Java虚拟机.md
 |   `-- 设计模式之禅.md
 |-- tools
