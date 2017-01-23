@@ -89,7 +89,19 @@
     - `isFinite()` // 是有限小数
     - `isInFinite()` // 是无穷大
     - `isNaN()`    // 不是数
-- `Character` // TODO 对 Unicode 有更深入了解以后再来补充。
+- `Character`
+    
+    > The Java platform uses the UTF-16 representation in char arrays and in the String and StringBuffer classes. In this representation, supplementary characters are represented as a pair of char values, the first from the high-surrogates range, (\uD800-\uDBFF), the second from the low-surrogates range (\uDC00-\uDFFF).
+
+    - API 中包含了很多类似与正则表达式判断的方法。
+    - 对代码点的处理等等
+
+- `Math && StrictMath`
+    - 很多时候 `Math` 只是简单调用 `StrictMath` 中的方法
+    - `Math` 提供了更好地性能。
+    - `StrictMath` 提供了一致性的结果。
+
+
 
 ## 参考
 
