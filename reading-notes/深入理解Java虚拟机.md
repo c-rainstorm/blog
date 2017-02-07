@@ -18,6 +18,8 @@
         - [HotSpot 算法实现](#hotspot-算法实现)
         - [垃圾收集器](#垃圾收集器)
         - [内存分配与回收策略](#内存分配与回收策略)
+    - [第十章 早期（编译器）优化](#第十章-早期编译器优化)
+        - [前端编译过程（`*.java --> *.class`）](#前端编译过程java----class)
     - [参考](#参考)
 
 <!-- /TOC -->
@@ -193,6 +195,18 @@ TLAB（Thread local allocate buffer）线程私有分配缓冲区，每个线程
 1. 动态对象年龄判定。当一个年龄的所有对象大小总和超过 Servivor 空间一半时，大于等于该年龄的所有对象都进入老年代
 1. 空间分配担保。当发生 Minor GC 时，若存活的对象过多，servivor 空间无法全部容纳时，会将剩余的对象直接放入永久代；若永久代空间不足以容纳时会引发一次 Full GC
 
+## 第十章 早期（编译器）优化
+
+// TODO: 因本章含有相当多的编译原理相关概念，所以第十、十一章学习延后（预计第 8-9 周）
+
+### 前端编译过程（`*.java --> *.class`）
+
+1. 解析与填充符号表
+    1. 词法分析。将源代码转换为标记（`Token`） 的集合
+        - Token: 是编译过程中的最小元素。例如关键字、变量名、运算符等等
+    1. 语法分析。通过 `Token` 序列将构造抽象语法树(Abstract syntax tree)
+        
+
 ## 参考
 
 1. 郑州大学姜志明老师课件
@@ -201,3 +215,5 @@ TLAB（Thread local allocate buffer）线程私有分配缓冲区，每个线程
 1. [Java HotSpot Virtual Machine Garbage Collection Tuning Guide](http://docs.oracle.com/javase/8/docs/technotes/guides/vm/gctuning/index.html)
 1. [JVM 垃圾回收器工作原理及使用实例介绍 -- IBM](https://www.ibm.com/developerworks/cn/java/j-lo-JVMGarbageCollection/)
 1. [Minor GC vs Major GC vs Full GC](https://plumbr.eu/blog/garbage-collection/minor-gc-vs-major-gc-vs-full-gc)
+1. [Abstract syntax tree](https://en.wikipedia.org/wiki/Abstract_syntax_tree)
+1. [4.4 Symbol Tables](http://introcs.cs.princeton.edu/java/44st/)
