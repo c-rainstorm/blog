@@ -14,6 +14,7 @@
 |   |-- 深入理解Java虚拟机.md
 |   `-- 设计模式之禅.md
 |-- tools
+|   |-- compile-install-lastest-Git.md
 |   `-- log4j2.md
 |-- java-api
 |   `-- java.lang.md
