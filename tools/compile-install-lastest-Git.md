@@ -7,6 +7,7 @@
         - [获取代码并编译](#获取代码并编译)
         - [卸载旧版 Git](#卸载旧版-git)
         - [将编译好的最新版的目录添加到环境变量](#将编译好的最新版的目录添加到环境变量)
+        - [添加 man-page](#添加-man-page)
     - [后遗症](#后遗症)
     - [遇到的问题](#遇到的问题)
         - [`git-compat-util.h:280:25: fatal error: openssl/ssl.h: No such file or directory`](#git-compat-utilh28025-fatal-error-opensslsslh-no-such-file-or-directory)
@@ -50,6 +51,20 @@ export PATH
 ```
 [rainstorm@localhost blog]$ git --version
 git version 2.11.0
+```
+### 添加 man-page
+
+```
+添加以下代码到 /etc/man_db.conf 最后一行
+MANDATORY_MANPATH                       /opt/git/Documentation
+
+$ cd /opt/git/Documentation
+$ mkdir man1 man5 man7
+$ mv *.1 man1
+$ mv *.5 man5
+$ mv *.7 man7
+
+$ man git
 ```
 
 ## 后遗症
