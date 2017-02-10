@@ -6,6 +6,8 @@
     - [第三章 对所有方法都通用的方法](#第三章-对所有方法都通用的方法)
         - [`equals()`](#equals)
         - [`hashCode()`](#hashcode)
+    - [第六章 枚举和注解](#第六章-枚举和注解)
+    - [第七章 方法](#第七章-方法)
     - [第八章 通用程序设计](#第八章-通用程序设计)
 
 <!-- /TOC -->
@@ -100,7 +102,7 @@ public class ColorPoint {
 约定：
 
 1. 在应用程序执行过程中，只要 `equals()` 方法未更改，同一个对象调用 `hashCode()` 返回结果应该一致。
-1. `if(x.equals(y)) x.hashCode() == y.hashCode();` 
+1. `if(x.equals(y)) x.hashCode() == y.hashCode();`
 
 实现约定:
 
@@ -172,9 +174,42 @@ public class PhoneNumber {
 ```
 
 Tips:
- 
+
 1. 删除冗余域。
 1. 计算 hashCode 开销较大时，可以将其缓存到类内部。创建时计算或首次调用 `hashCode()` 时计算。
+
+## 第六章 枚举和注解
+
+1. 使用 `enum` 代替 int 常量
+1. 用实例域代替序数。
+    - 将特定枚举常量关联到特定的 int 值。
+1. 使用 `EnumSet` 代替位域
+    - 位域：使用或运算将多个常量合并到一个集合中。`text.applyStyles(STYLE_BOLD | STYLE_ITALIC)`
+    - `text.applyStyles(EnumSet.of(Style.BOLD, Style.ITALIC))`
+1. 使用 `EnumMap` 代替序数索引
+    - `Map<Herb.Type, Set<Herb>> herbsByType = new EnumMap<Herb.Type, Set<Herb>>(Herb.Type.class);`
+    - 多维：`EnumMap<..., EnumMap<...>>`
+
+## 第七章 方法
+
+1. 检查参数有效性
+    - `public` 方法使用异常
+    - `private` 方法使用断言
+1. 必要时进行保护性拷贝
+    - getXXX()
+    - setXXX()
+    - constructor
+1. 谨慎设计方法签名
+    - 命名方式要统一
+    - 参数不宜超过 3 个。可以通过创建对象来传递多个参数
+    - 参数类型优先使用接口
+1. 慎用重载
+    - 重载方法是在编译期确定的（静态绑定）
+1. 慎用可变参数
+1. 返回 0 长度的数组或集合，而不是 `null`
+1. 为所有导出的 API 元素编写文档注释
+    - [how to write doc comments](http://www.oracle.com/technetwork/articles/java/index-137868.html)
+
 
 ## 第八章 通用程序设计
 
