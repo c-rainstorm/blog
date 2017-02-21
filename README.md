@@ -9,6 +9,8 @@
 ```
 .
 |-- reading-notes
+|   |-- solutions
+|   |   `-- 现代操作系统.md
 |   |-- Effective-Java.md
 |   |-- unicodeStandard.md
 |   |-- 深入理解Java虚拟机.md
@@ -19,6 +21,7 @@
 |-- java-api
 |   `-- java.lang.md
 |-- plans
+|   |-- 大三下学习计划.md
 |   `-- 寒假学习计划.md
 |-- LICENSE
 `-- README.md
