@@ -11,11 +11,15 @@
 |-- reading-notes
 |   |-- solutions
 |   |   `-- 现代操作系统.md
+|   |-- 面试题目分类及举例.md
 |   |-- Effective-Java.md
 |   |-- unicodeStandard.md
+|   |-- 计算机网络杂记.md
 |   |-- 深入理解Java虚拟机.md
 |   `-- 设计模式之禅.md
 |-- tools
+|   |-- enable-IPv6.md
+|   |-- 科学上网之代理服务器配置.md
 |   |-- compile-install-lastest-Git.md
 |   `-- log4j2.md
 |-- java-api
@@ -23,6 +27,7 @@
 |-- plans
 |   |-- 大三下学习计划.md
 |   `-- 寒假学习计划.md
+|-- res/
 |-- LICENSE
 `-- README.md
 ```
