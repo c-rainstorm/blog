@@ -8,11 +8,13 @@
 
 ```
 .
+|-- interview
+|   |-- 岗位要求总结及待学习技术汇总.md
+|   |-- 面试相关知识总结.md
+|   `-- 面试题目分类及举例.md
 |-- reading-notes
 |   |-- solutions
 |   |   `-- 现代操作系统.md
-|   |-- 面试题目分类及举例.md
-|   |-- 岗位要求总结及待学习技术汇总.md
 |   |-- Effective-Java.md
 |   |-- unicodeStandard.md
 |   |-- 计算机网络杂记.md
