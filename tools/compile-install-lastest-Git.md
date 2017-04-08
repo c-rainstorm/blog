@@ -26,7 +26,7 @@ Tips： 为了保证编译一次成功，可以将『遇到的问题』部分中
 ### 获取代码并编译
 
 ```bash
-$ cd ~/workspace/git                     
+$ cd ~/workspace/git
 $ git clone git@github.com:git/git.git
 $ cd git
 $ git checkout v2.11.0 ; 当前最新版
@@ -34,7 +34,7 @@ $ git checkout -b v2.11 ; 创建新分支
 $ make prefix=/usr all doc info
 $ sudo mv ../git /opt
 ```
-### 卸载旧版 Git 
+### 卸载旧版 Git
 
 - `yum remove git`
 
@@ -149,7 +149,7 @@ make[1]: Leaving directory `/home/rainstorm/workspace/git/git/Documentation'
 make: *** [info] Error 2
 
 ```
-
+- `// 需要 EPEL 源`
 - `# yum install docbook2X` //注意 最后 X 为大写
 - `$ cd /usr/bin`
 - `sudo ln -s /usr/bin/db2x_docbook2texi /usr/bin/docbook2x-texi`
