@@ -2,6 +2,8 @@
 
 本仓库下存放个人博客的源文件。持续更新，欢迎 `star`。
 
+如果大家觉得那里写的不合适的可以给我提 `Issue`
+
 ---
 
 ## 目录简介
@@ -26,6 +28,7 @@
 |   |-- enable-IPv6.md
 |   |-- 科学上网之代理服务器配置.md
 |   |-- compile-install-lastest-Git.md
+|   |-- linux常用问题解决方案汇总.md
 |   `-- log4j2.md
 |-- java-api
 |   `-- java.lang.md
