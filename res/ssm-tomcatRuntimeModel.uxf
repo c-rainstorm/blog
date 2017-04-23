@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.2">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>230</x>
+      <y>120</y>
+      <w>560</w>
+      <h>370</h>
+    </coordinates>
+    <panel_attributes>Tomcat/Container/Host/Servlet/Context</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>270</x>
+      <y>190</y>
+      <w>170</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>Wrapper
+--
+DispatcherServlet</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>270</x>
+      <y>340</y>
+      <w>230</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>MVC ApplicationContext
+--
+Controller
+viewResolver
+halign=left</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>560</x>
+      <y>180</y>
+      <w>190</w>
+      <h>260</h>
+    </coordinates>
+    <panel_attributes>Root ApplicationContext
+--
+service
+dao
+dataSource
+sqlSessionFactory
+transactionManager
+halign=left
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>340</x>
+      <y>250</y>
+      <w>70</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+create</panel_attributes>
+    <additional_attributes>10.0;90.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>490</x>
+      <y>380</y>
+      <w>90</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+child</panel_attributes>
+    <additional_attributes>70.0;20.0;10.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>650</x>
+      <y>430</y>
+      <w>30</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes/>
+    <additional_attributes>10.0;10.0;10.0;150.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>560</x>
+      <y>580</y>
+      <w>260</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>bg=orange
+Root ApplicationContext 为
+XmlWebApplicationContext 的实例。
+由 ContextLoaderListener 
+加载，扫描 spring.xml 生成
+bean</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>260</x>
+      <y>580</y>
+      <w>260</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>bg=orange
+MVC ApplicationContext 为
+XmlWebApplicationContext 的实例。
+由 DispatcherServlet创建，
+扫描 spring-mvc.xml 生成
+bean</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>350</x>
+      <y>430</y>
+      <w>30</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes/>
+    <additional_attributes>10.0;10.0;10.0;150.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>0</x>
+      <y>60</y>
+      <w>190</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>bg=orange
+Tomcat 容器模型
+外层不是关注重点，
+我直接合并了。</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>180</x>
+      <y>90</y>
+      <w>70</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes/>
+    <additional_attributes>50.0;30.0;10.0;10.0</additional_attributes>
+  </element>
+</diagram>
