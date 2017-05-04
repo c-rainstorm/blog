@@ -31,6 +31,14 @@
         - [Inode 相关特性(Inode-related features)](#inode-相关特性inode-related-features)
         - [磁盘预分配(Persistent preallocation )](#磁盘预分配persistent-preallocation-)
         - [屏障默认开启(Barriers on by default)](#屏障默认开启barriers-on-by-default)
+    - [Ext4 磁盘布局](#ext4-磁盘布局)
+        - [概述(Overview)](#概述overview)
+            - [块(Blocks)](#块blocks)
+            - [布局(layout)](#布局layout)
+            - [弹性块组(Flexible Block Groups)](#弹性块组flexible-block-groups)
+            - [元块组(Meta Block Groups)](#元块组meta-block-groups)
+        - [超级块(The Super Block)](#超级块the-super-block)
+        - [块组描述符(Block Group Descriptors)](#块组描述符block-group-descriptors)
     - [参考](#参考)
 
 <!-- /TOC -->
@@ -126,7 +134,61 @@ Ext4 使用一阶段提交 + 日志校验来保证正确性，性能提升大约
 
 内核的 阻塞 I/O 子系统使用屏障来实现，即在加载日志时进行阻塞，其他数据 I/O 操作就无法再进行了。
 
+
+## Ext4 磁盘布局
+
+### 概述(Overview)
+
+![](../res/fs-layout.jpg)
+
+- MBR 为主引导记录用来引导计算机。在计算机启动时，BIOS 读入并执行 MBR，MBR 作的第一件事就是确定活动分区(这对应于双系统的计算机开机时选择启动项，单系统的直接就能确定了所以就不需要选择)，读入活动分区的引导块(Boot block)，引导块再加载该分区中的操作系统。
+- 分区表(Partition table)用来记录每个分区的起始和结束地址，表中的一个分区为活动分区。
+- 引导块(boot block)用于转载该分区的操作系统。
+- 超级块(super block)包含文件系统的所有关键参数。
+
+Ext4 文件系统被分为一系列的块组(block groups)。为了减少磁盘碎片带来的性能问题，减少寻道时间，块分配器总是尝试将每个文件的所有块分配到同一个块组中。块组的大小由超级块中的属性来定义，通常是 `8 * block_size_in_bytes` 对于块大小为 4Kb 的磁盘来说，每一个组可以包含 32768 个 block，总共 128Mb。块组的数目为磁盘空间除以块组大小。
+
+在 Ext4 中处日志以外的数据都是以小端法存储的。
+
+#### 块(Blocks)
+
+一个块由偶数个扇区(sector)组成，一个块组又由多个块组成。块大小在 build file system 时被指定，通常是 4Kb。如果块大小大于内存页的大小，装载文件系统时可能会遇到问题。
+
+#### 布局(layout)
+
+![](../res/fs-ext4-layout.png)
+
+为了允许安装启动扇区和其他用途，块组 0 的开头 1024 bytes 未被使用。超级块从 第 1024 bytes 开始，通常在第 0 块，但如果块大小是 1Kb，则从第 1 块开始。
+
+Ext4 驱动主要使用在第 0 块组的超级块和组描述符(Group Descriptors)来工作。为了防止磁盘开头部分崩溃而无法访问文件系统，会将超级块和组描述符的副本保存在多个块组中，没有保存副本的块组以数据块位图 (Data Block Bitmap) 开头。
+
+inode table 的位置保存在 `grp.bg_inode_table_*` 中，这是足够容纳 `sb.s_inodes_per_group * sb.s_inode_size` bytes 的连续块。
+
+#### 弹性块组(Flexible Block Groups)
+
+从 Ext4 开始，有了一个叫弹性块组(flex_bg)的新特性。在一个弹性块组中几个普通块组连在一起组成一个逻辑块组，几个普通块组的元数据(inode 节点表和位图等等)都存放在一起，然后弹性块组中剩余的空间都用来存放数据。这种方法可以加快加载速度并且可以使大文件连续存放。组成弹性块组的普通块组的数量为 `2 ^ sb.s_log_groups_per_flex`
+
+#### 元块组(Meta Block Groups)
+
+//TODO
+
+
+### 超级块(The Super Block)
+
+超级块记录了文件系统的关键参数。
+
+`sparse_super` 特性标志被设置后，冗余的超级块和组描述符的副本只保留在组号为 0 或组号为 3，5，7 的倍数的块组中，否则冗余副本会保存在所有的块组中。
+
+超级块占用 1Kb 空间。
+
+详细的参数描述请查阅官方文档，不再赘述。
+
+### 块组描述符(Block Group Descriptors)
+
+//TODO
+
 ## 参考
 
 1. [File system](https://en.wikipedia.org/wiki/File_system#Linux)
 1. [Ext4 Howto](https://ext4.wiki.kernel.org/index.php/Ext4_Howto)
+1. [Ext4 Disk Layout](https://ext4.wiki.kernel.org/index.php/Ext4_Disk_Layout#Overview)
