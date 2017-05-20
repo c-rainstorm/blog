@@ -37,8 +37,27 @@
             - [布局(layout)](#布局layout)
             - [弹性块组(Flexible Block Groups)](#弹性块组flexible-block-groups)
             - [元块组(Meta Block Groups)](#元块组meta-block-groups)
+            - [块组初始化延迟(Lazy Block Group Initialization)](#块组初始化延迟lazy-block-group-initialization)
+            - [特殊的节点(Special inodes)](#特殊的节点special-inodes)
+            - [块和节点分配策略(Block and Inode Allocation Policy)](#块和节点分配策略block-and-inode-allocation-policy)
+            - [校验和(Checksums)](#校验和checksums)
+            - [(Bigalloc)](#bigalloc)
+            - [(inline Data)](#inline-data)
         - [超级块(The Super Block)](#超级块the-super-block)
         - [块组描述符(Block Group Descriptors)](#块组描述符block-group-descriptors)
+        - [块和节点位图(Block and inode Bitmaps)](#块和节点位图block-and-inode-bitmaps)
+        - [节点表(Inode Table)](#节点表inode-table)
+            - [节点大小（Inode Size）](#节点大小inode-size)
+            - [查找节点（Finding an Inode）](#查找节点finding-an-inode)
+            - [节点时间戳（Inode Timestamps）](#节点时间戳inode-timestamps)
+        - [`inode.i_block` 内容（The Contents of inode.i_block）](#inodei_block-内容the-contents-of-inodei_block)
+            - [符号连接（Symbolic Links）](#符号连接symbolic-links)
+            - [直接/间接块寻址（Direct/Indirect Block Addressing）](#直接间接块寻址directindirect-block-addressing)
+            - [Extent Tree](#extent-tree)
+            - [内联数据（Inline Data）](#内联数据inline-data)
+        - [目录实体（Directory Entries）](#目录实体directory-entries)
+            - [线性目录（Linear (Classic) Directories）](#线性目录linear-classic-directories)
+            - [hash tree 目录](#hash-tree-目录)
     - [参考](#参考)
 
 <!-- /TOC -->
@@ -143,12 +162,19 @@ Ext4 使用一阶段提交 + 日志校验来保证正确性，性能提升大约
 
 - MBR 为主引导记录用来引导计算机。在计算机启动时，BIOS 读入并执行 MBR，MBR 作的第一件事就是确定活动分区(这对应于双系统的计算机开机时选择启动项，单系统的直接就能确定了所以就不需要选择)，读入活动分区的引导块(Boot block)，引导块再加载该分区中的操作系统。
 - 分区表(Partition table)用来记录每个分区的起始和结束地址，表中的一个分区为活动分区。
-- 引导块(boot block)用于转载该分区的操作系统。
-- 超级块(super block)包含文件系统的所有关键参数。
+- 每个分区可以装载不同的文件系统, 下面介绍都以 Ext4 为例。
+    - Ex4 文件系统将磁盘分为一系列块组(block groups)。为了减少磁盘碎片带来的性能问题，减少寻道时间，块分配器总是尝试将每个文件的所有块分配到同一个块组中。块组的大小由超级块中的属性来定义，通常是 `8 * block_size_in_bytes` 对于块大小为 4Kb 的磁盘来说，每一个组可以包含 32768 个 block，总共 128Mb。块组的数目为磁盘空间除以块组大小
+    - 每个块组的磁盘布局都基本相同，下面就块组 0 做简单介绍
+        - 1024 bytes 的 Group 0 Padding（boot block）只有 块组0 有，用于装载该分区的操作系统。
+        - 超级块(super block)包含文件系统的所有关键参数。
+        - Group Descriptors。用于记录块组内部相关的信息。
+        - Reserved GDT Blocks。用于文件系统未来的拓展
+        - Data Block Bitmap。用于记录块组内部数据块的使用情况。
+        - inode Bitmap。用于记录 inode table 中的 inode 的使用情况。
+        - inode table
+        - Data Block
 
-Ext4 文件系统被分为一系列的块组(block groups)。为了减少磁盘碎片带来的性能问题，减少寻道时间，块分配器总是尝试将每个文件的所有块分配到同一个块组中。块组的大小由超级块中的属性来定义，通常是 `8 * block_size_in_bytes` 对于块大小为 4Kb 的磁盘来说，每一个组可以包含 32768 个 block，总共 128Mb。块组的数目为磁盘空间除以块组大小。
-
-在 Ext4 中处日志以外的数据都是以小端法存储的。
+在 Ext4 中除日志以外的数据都是以小端法存储的。
 
 #### 块(Blocks)
 
@@ -170,8 +196,29 @@ inode table 的位置保存在 `grp.bg_inode_table_*` 中，这是足够容纳 `
 
 #### 元块组(Meta Block Groups)
 
-//TODO
+当没有 `META_BG` 选项时，为了安全考虑，所有的块组描述符都有一份副本存放在第一个块组中，块组默认大小是 128MB(2^27 bytes)，块组描述符是 64 bytes, 所以 ext4 最多能有 2^27 / 64 = 2^21 个块组，这限制了文件系统的大小为 2^21 * 128MB = 256TB。
 
+为了解决这个问题，引入了元块组(`META_BG`)的特性。一个 block 4kb ，可以容纳 64 个块组的描述符，ext4 文件系统以 64 个块组为单位组成一个个元块组，元块组的 64 个块组描述符都放在该元块组的第一个块组中，块组描述符的备份可以放在第二个块组和最后一个块组中。这样就将块组描述符从第一个块组移动到了整个文件系统。文件系统支持的大小从 256TB 增加到了 512PB(2^32 Block groups)。
+
+#### 块组初始化延迟(Lazy Block Group Initialization)
+
+Ext4 提供了 3 个块组描述符标识来启用该特性。
+
+`INODE_UNINIT` 和 `BLOCK_UNINIT` 标识
+
+// TODO
+
+#### 特殊的节点(Special inodes)
+
+![](../res/fs-si.png)
+
+#### 块和节点分配策略(Block and Inode Allocation Policy)
+
+#### 校验和(Checksums)
+
+#### (Bigalloc)
+
+#### (inline Data)
 
 ### 超级块(The Super Block)
 
@@ -185,10 +232,84 @@ inode table 的位置保存在 `grp.bg_inode_table_*` 中，这是足够容纳 `
 
 ### 块组描述符(Block Group Descriptors)
 
-//TODO
+![](../res/fs-bgd.png)
+
+在一个块组中，拥有固定位置的数据结构只有超级块和块组描述符。
+
+`flex_bg` 和 `meta_bg` 并不是互斥关系。
+
+ext4 64-bits 特性未开启时占用 32 bytes，开启时占用 64 bytes。
+
+
+### 块和节点位图(Block and inode Bitmaps)
+
+位图用来记录数据块和 inode 节点的使用情况。
+
+位图中 1 bit 表示一个数据块或 inode 表中的一个节点的使用情况
+
+### 节点表(Inode Table)
+
+在常规的 UNIX 文件系统中， 节点存储文件所有的元数据（时间戳、块映射、拓展属性等等），目录使用另外的数据结构存储。为了找到一个文件的信息，首先要找到文件所在的目录，然后加载该文件的 inode 节点。
+
+为了性能方面的考虑，ext4 存储一部分文件属性到目录实体。
+
+节点表是 inode 节点的线性数组。节点表被分配足够的空间来存放至少 `sb.s_inode_size * sb.s_inodes_per_group` bytes 的节点信息。一个节点所在的块组号可以用 `(inode_number - 1) / sb.s_inodes_per_group` 来计算，在节点表中的偏移量为 `(inode_number - 1) % sb.s_inodes_per_group`
+
+节点属性较多，请查阅文档。
+
+#### 节点大小（Inode Size）
+
+节点大小由超级块中的 `s_inode_size` 决定，默认为 256 bytes。
+
+#### 查找节点（Finding an Inode）
+
+block group = `(inode_number - 1) / sb.s_inodes_per_group`
+
+inode table index = `(inode_number - 1) % sb.s_inodes_per_group`
+
+byte address in the inode table = (inode table index) * `sb->s_inode_size`
+
+#### 节点时间戳（Inode Timestamps）
+
+inode 节点中记录了四个时间戳，分别是 inode 修改时间(inode change time - ctime)，访问时间(access time - atime)，数据修改时间(data modification time - mtime)，删除时间(deletion time - dtime)。这四个域都是 32 位有符号数，代表了从 Unix 纪元(1970-01-01 00:00:00 GMT)所经过的秒数。会在 2038 年溢出。
+
+如果 inode 节点大于 128 bytes 并且多出的部分足够的话，会将 ctime、atime、mtime 拓宽到 64 位。在拓展的 32 位中，低 2 bit 会与原有的 32 位组合，用来表示秒数，高 30 bits用来提供纳秒级的精度。溢出时间从 2038 年延迟到了 2446 年
+
+### `inode.i_block` 内容（The Contents of inode.i_block）
+
+![](../res/fs-inode.png)
+
+在 inode 节点中 i_block[EXT4_N_BLOCKS=15] 域 一共 60 bytes,通常情况下用来记录文件块的索引信息。
+
+#### 符号连接（Symbolic Links）
+
+// TODO
+
+#### 直接/间接块寻址（Direct/Indirect Block Addressing）
+
+见上图
+
+#### Extent Tree
+
+// TODO
+
+#### 内联数据（Inline Data）
+
+// TODO
+
+### 目录实体（Directory Entries）
+
+
+
+#### 线性目录（Linear (Classic) Directories）
+
+#### hash tree 目录
+
 
 ## 参考
 
 1. [File system](https://en.wikipedia.org/wiki/File_system#Linux)
 1. [Ext4 Howto](https://ext4.wiki.kernel.org/index.php/Ext4_Howto)
 1. [Ext4 Disk Layout](https://ext4.wiki.kernel.org/index.php/Ext4_Disk_Layout#Overview)
+1. [Inode Structure in EXT4 filesystem](https://selvamvasu.wordpress.com/2014/08/01/inode-vs-ext4/)
+1. [Linux/Unix 系统编程手册]()
