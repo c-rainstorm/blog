@@ -299,9 +299,23 @@ inode 节点中记录了四个时间戳，分别是 inode 修改时间(inode cha
 
 ### 目录实体（Directory Entries）
 
-
+在 ext4 文件系统中，目录中保存这文件名到 inode 号的映射。我们可以通过硬连接使不同的文件引用相同的 inode 号。读取一个文件的数据块前，会将其对应的目录的信息先加载到内存。目录和普通文件他们都是用 inode 节点来表示，但不同的是普通文件的 `i_block` 所指向的该文件对应的数据块，目录节点的 `i_block` 所指向的是保存该目录中条目信息的块。
 
 #### 线性目录（Linear (Classic) Directories）
+
+默认情况下，每一个目录将所包含的条目保存到几乎线性的数组中。因为目录条目不能跨越文件系统块，所以在每一块的最后可能都会有剩余的字节，所以它并不是一个严格的数组。准确的来说，一个目录是一系列的数据块，每一个数据块包含了一个保存目录条目的线性数组。
+
+![](../res/fs-lde.png)
+
+每个目录条目包含一个 32-bits 的 inode 节点号，一个 16-bits 的目录条目长度，一个 16-bits 的文件名长度，一个 `EXT4_NAME_LEN` 长度文件名 `char` 数组。
+
+![](../res/fs-lde1.png)
+
+因为文件名不能超过 255 bytes， 所以新的目录条目将 16-bits 的文件名长度缩减为 8-bits， 剩余的 8-bits 用来保存目录条目对应文件的文件类型。
+
+若超级块中的 `filetype` 标志为 0，使用第一个结构，若为 1，使用第二个结构。
+
+线性的结构会带来查找的效率问题，通常查找文件的操作会频繁执行，每次都用线性时间作这件事效率会比较低
 
 #### hash tree 目录
 
@@ -312,4 +326,5 @@ inode 节点中记录了四个时间戳，分别是 inode 修改时间(inode cha
 1. [Ext4 Howto](https://ext4.wiki.kernel.org/index.php/Ext4_Howto)
 1. [Ext4 Disk Layout](https://ext4.wiki.kernel.org/index.php/Ext4_Disk_Layout#Overview)
 1. [Inode Structure in EXT4 filesystem](https://selvamvasu.wordpress.com/2014/08/01/inode-vs-ext4/)
+1. [理解inode](http://www.ruanyifeng.com/blog/2011/12/inode.html)
 1. [Linux/Unix 系统编程手册]()
