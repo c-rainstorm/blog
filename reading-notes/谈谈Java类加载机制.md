@@ -23,7 +23,7 @@
 类加载器主要分为两类，一类是 JDK 默认提供的，一类是用户自定义的。
 JDK 默认提供三种类加载器
 
-1. `Bootstrap ClassLoader`，启动类加载器，每次执行 `java` 命令时都会使用该加载器为虚拟机加载核心类。该加载器是由 `native code` 实现，而不是 Java 代码，加载类的路径为 `<JAVA_HOME>/jre/lib`。特别的 `<JAVA_HOME>/jre/lib/rj.jar` 中包含了 `sun.misc.Launcher` 类， 而 `sun.misc.Launcher$ExtClassLoader` 和 `sun.misc.Launcher$AppClassLoader` 都是 `sun.misc.Launcher` 的内部类，所以拓展类加载器和系统类加载器都是由启动类加载器加载的。
+1. `Bootstrap ClassLoader`，启动类加载器，每次执行 `java` 命令时都会使用该加载器为虚拟机加载核心类。该加载器是由 `native code` 实现，而不是 Java 代码，加载类的路径为 `<JAVA_HOME>/jre/lib`。特别的 `<JAVA_HOME>/jre/lib/rt.jar` 中包含了 `sun.misc.Launcher` 类， 而 `sun.misc.Launcher$ExtClassLoader` 和 `sun.misc.Launcher$AppClassLoader` 都是 `sun.misc.Launcher` 的内部类，所以拓展类加载器和系统类加载器都是由启动类加载器加载的。
 1. `Extension ClassLoader`, 拓展类加载器，用于加载拓展库中的类。拓展库路径为 `<JAVA_HOME>/jre/lib/ext/`。实现类为 `sun.misc.Launcher$ExtClassLoader`
 1. `System ClassLoader`, 系统类加载器。用于加载 CLASSPATH 中的类。实现类为 `sun.misc.Launcher$AppClassLoader`
 
