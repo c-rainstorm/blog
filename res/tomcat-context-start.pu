@@ -1,0 +1,105 @@
+@startuml
+
+activate StandardHost
+StandardHost -> StandardContext : Start()
+activate StandardContext
+    StandardContext -> StandardContext : init()
+    activate StandardContext
+        StandardContext -> StandardContext : reconfigureStartStopExecutor()
+    deactivate StandardContext
+    StandardContext -> ContextConfig : lifecycleEvent(BEFORE_START_EVENT)
+    activate ContextConfig
+        ContextConfig -> ContextConfig : beforeStart();
+        activate ContextConfig
+        deactivate ContextConfig
+    deactivate ContextConfig
+    StandardContext -> StandardContext : startInternal()
+    activate StandardContext
+        StandardContext -> StandardRoot : setResource(new StandardRoot(this);)
+        StandardContext -> StandardContext : resourceStart();
+        activate StandardContext
+            StandardContext -> StandardRoot : start()
+            activate StandardRoot
+                StandardRoot -> StandardRoot : init();
+                StandardRoot -> StandardRoot : startInternal();
+                activate StandardRoot
+                    StandardRoot -> StandardRoot : createMainResourceSet()
+                    activate StandardRoot
+                        DirResourceSet --> StandardRoot : new DirResourceSet
+                    deactivate StandardRoot
+                    StandardRoot -> StandardRoot : processWebInfLib();
+                    activate StandardRoot
+                        JarResourceSet --> StandardRoot : new JarResourceSet for *.jar in /WEB-INF/lib/
+                    deactivate StandardRoot
+                deactivate StandardRoot
+            deactivate StandardRoot
+        deactivate StandardContext
+        StandardContext -> StandardHost : getParentClassLoader()
+        StandardHost --> StandardContext : sharedClassLoader
+        StandardContext -> StandardContext : setLoader(new WebappLoader(sharedClassLoader))
+        StandardContext -> StandardContext : postWorkDirectory();
+        activate StandardContext
+            StandardContext -> StandardContext : create work directory[work/<Engine>/<Host>/<Context>/]
+            StandardContext -> StandardContext : getServletContext()
+            activate StandardContext
+            activate ApplicationContext
+                ApplicationContextFacade --> ApplicationContext : new ApplicationContextFacade
+            deactivate ApplicationContext
+            StandardContext <-- ApplicationContext : new ApplicationContext(this)
+            deactivate StandardContext
+        deactivate StandardContext
+        StandardContext -> WebappLoader : start()
+        activate WebappLoader
+            WebappLoader -> WebappLoader : createClassLoader()
+            activate WebappLoader
+                WebappLoader -> ParallelWebappClassLoader : newInstance();
+                WebappLoader -> ParallelWebappClassLoader : config
+                WebappLoader -> ParallelWebappClassLoader : start();
+                activate ParallelWebappClassLoader
+                    ParallelWebappClassLoader -> ParallelWebappClassLoader : config repository [/WEB-INF/classes/ && /WEB-INF/lib/*.jar]
+                deactivate ParallelWebappClassLoader
+            deactivate WebappLoader
+        deactivate WebappLoader
+        StandardContext -> ContextConfig : lifecycleEvent(CONFIGURE_START_EVENT)
+        activate ContextConfig
+            ContextConfig -> ContextConfig : configureStart();
+            activate ContextConfig
+                ContextConfig -> ContextConfig : webConfig();
+                activate ContextConfig
+                    ContextConfig -> ContextConfig : getDefaultWebXmlFragment()
+                    activate ContextConfig
+                        ContextConfig -> ContextConfig : getGlobalWebXmlSource()[conf/web.xml]
+                        ContextConfig -> ContextConfig : getHostWebXmlSource()[conf/<Engine>/<Host>/web.xml.default]
+                    deactivate ContextConfig
+                    ContextConfig -> WebXml : createWebXml();
+                    ContextConfig -> ContextConfig : getContextWebXmlSource()
+                    activate ContextConfig
+                        ContextConfig -> StandardRoot : getResource()[/WEB-INF/web.xml]
+                        StandardRoot --> ContextConfig : contextWebXml
+                    deactivate ContextConfig
+                    ContextConfig -> WebXmlParser : parseWebXml()[create Servlet,Listener, Filter ,etc,and add to StandardContext]
+                    ContextConfig -> ContextConfig : processAnnotationsWebResource() \n [analysis annotation of classes in /WEB-INF/classes] \n if the class has @WebServlet,@WebFilter,@WebListener annotation,\n then add to WebXml
+                    ContextConfig -> ContextConfig : merge global webxml and context webxml
+                    ContextConfig -> StandardContext : configureContext()
+                    activate ContextConfig
+                    deactivate ContextConfig
+                    ContextConfig -> StandardContext : setConfigured(true)
+                deactivate ContextConfig
+            deactivate ContextConfig
+        deactivate ContextConfig
+        StandardContext -> StandardWrapper : start();
+        activate StandardWrapper
+        deactivate StandardWrapper
+        StandardContext -> StandardPipeline : start();
+        activate StandardPipeline
+            StandardPipeline -> Valve : start()
+        deactivate StandardPipeline
+
+    deactivate StandardContext
+deactivate StandardContext
+
+footer
+图 4 Tomcat Context start
+endfooter
+
+@enduml

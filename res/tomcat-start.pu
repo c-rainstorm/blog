@@ -1,0 +1,142 @@
+@startuml
+
+activate Bootstrap
+    activate Catalina
+        Bootstrap -> Catalina : load()
+        Bootstrap -> Catalina : start();
+        activate JVM
+        activate CatalinaShutdownHook
+        activate StandardServer
+            Catalina -> StandardServer : start();
+            activate StandardServer
+                StandardServer -> StandardService : start()
+                activate StandardService
+                    StandardService -> StandardEngine : start()
+                    activate StandardEngine
+                        StandardEngine -> StandardHost : start();
+                        activate StandardHost
+                            StandardHost -> StandardContext : start()
+                            activate StandardContext
+                            deactivate StandardContext
+                            StandardHost -> Host.StandardPipeline : start();
+                            activate Host.StandardPipeline
+                                Host.StandardPipeline -> Valve : start();
+                                activate Valve
+                                deactivate Valve
+                            deactivate Host.StandardPipeline
+                            StandardHost -> HostConfig : lifecycleEvent(BEFORE_START_EVENT)
+                            activate HostConfig
+                                HostConfig -> StandardHost : getAppBaseFile();
+                                activate StandardHost
+                                    StandardHost --> HostConfig : appBase:$CATALINA_BASE/webapps
+                                deactivate StandardHost
+                                HostConfig -> StandardHost : getConfigBaseFile()
+                                activate StandardHost
+                                    StandardHost --> HostConfig : hostConfigBase : $CATALINA_BASE/conf/<Engine>/<Host>/
+                                deactivate StandardHost
+                                HostConfig -> HostConfig : mkdirs()
+                            deactivate HostConfig
+                            StandardHost -> HostConfig : lifecycleEvent(start)
+                            activate HostConfig
+                                HostConfig -> HostConfig : deployApps()
+                                activate HostConfig
+                                    HostConfig -> HostConfig : deployDescriptors
+                                    activate HostConfig
+                                        HostConfig -> HostConfig : deployDescriptor
+                                        activate HostConfig
+                                            activate StandardContext
+                                                StandardContext --> HostConfig : create by Degister [$CATALINA_BASE/conf/<Engine>/<Host>/context.xml]
+                                                HostConfig -> StandardContext : config Context
+                                                HostConfig -> StandardHost : addChild()
+                                                activate StandardHost
+                                                    StandardHost -> StandardContext: start();
+                                                deactivate StandardHost
+                                            deactivate StandardContext
+                                        deactivate HostConfig
+                                    deactivate HostConfig
+                                    HostConfig -> HostConfig : deployWARs()
+                                    activate HostConfig
+                                        HostConfig -> HostConfig : deployWAR();
+                                        activate HostConfig
+                                            activate StandardContext
+                                                StandardContext -> HostConfig : create by Degister or just newInstance
+                                                HostConfig -> StandardContext : config Context
+                                                HostConfig -> StandardHost : addChild();
+                                                activate StandardHost
+                                                    StandardHost -> StandardContext: start()
+                                                deactivate StandardHost
+                                            deactivate StandardContext
+                                        deactivate HostConfig
+                                    deactivate HostConfig
+                                    HostConfig -> HostConfig : deployDirectories
+                                    activate HostConfig
+                                        HostConfig -> HostConfig : deployDirectory();
+                                        activate HostConfig
+                                            activate StandardContext
+                                                StandardContext -> HostConfig : create by Degister or just newInstance
+                                                HostConfig -> StandardContext : config Context
+                                                HostConfig -> StandardHost : addChild();
+                                                activate StandardHost
+                                                    StandardHost -> StandardContext: start()
+                                                deactivate StandardHost
+                                            deactivate StandardContext
+                                        deactivate HostConfig
+                                    deactivate HostConfig
+                                deactivate HostConfig
+                            deactivate HostConfig
+                            StandardHost -> StandardHost : threadStart() [option]
+                        deactivate StandardHost
+                        StandardEngine -> Engine.StandardPipeline : start()
+                        activate Engine.StandardPipeline
+                            Engine.StandardPipeline -> Valve : start();
+                            activate Valve
+                            deactivate Valve
+                        deactivate Engine.StandardPipeline
+                        StandardEngine -> EngineConfig : start()
+                        activate EngineConfig
+                        deactivate EngineConfig
+                        StandardEngine -> StandardEngine : threadStart();
+                        activate StandardEngine
+                            StandardEngine -> ContainerBackgroundProcessor : start();
+                        deactivate StandardEngine
+                    deactivate StandardEngine
+                    StandardService -> Connector : start();
+                    activate Connector
+                        Connector -> Http11NioProtocol : start()
+                        activate Http11NioProtocol
+                            Http11NioProtocol -> NioEndPoint : start();
+                            activate NioEndPoint
+                                NioEndPoint -> NioEndPoint : startAcceptorThreads();
+                                activate NioEndPoint
+                                    activate Acceptor
+                                        Acceptor -> NioEndPoint : new Acceptor();
+                                        NioEndPoint -> Acceptor : start();
+                                    deactivate Acceptor
+                                deactivate NioEndPoint
+                            deactivate NioEndPoint
+                        deactivate Http11NioProtocol
+                    deactivate Connector
+                deactivate StandardService
+            deactivate StandardServer
+        CatalinaShutdownHook -> Catalina : new CatalinaShutdownHook();
+        Catalina -> JVM : addShutdownHook();
+        Catalina -> Catalina : await();
+        activate Catalina
+            Catalina -> StandardServer : await();
+            activate StandardServer
+                StandardServer -> StandardServer : open 8005 to listen shutdown command
+                StandardServer --> Catalina : SHUTDOWN command received
+            deactivate StandardServer
+        deactivate Catalina
+        Catalina -> Catalina : stop();
+        activate Catalina
+            Catalina -> StandardServer : stop();
+        deactivate Catalina
+    deactivate Catalina
+deactivate Bootstrap
+
+footer
+图 3 Tomcat start
+endfooter
+
+@enduml

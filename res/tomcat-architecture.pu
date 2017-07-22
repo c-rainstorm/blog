@@ -1,0 +1,42 @@
+@startuml
+
+class Bootstrap
+
+class Catalina
+
+class StandardServer
+
+class StandardService
+
+class Connector
+interface Container
+class ContainerBase
+Container <|.. ContainerBase
+class StandardEngine
+class StandardHost
+class StandardContext
+class StandardWrapper
+class StandardPipeline
+
+Bootstrap ..> Catalina
+
+Catalina *-- StandardServer
+StandardServer "1" *-- "*" StandardService
+StandardService "1" *-- "*" Connector
+StandardService *-- StandardEngine
+StandardEngine "1" *-- "*" StandardHost
+StandardHost "1" *-- "*" StandardContext
+StandardContext "1" *-- "*" StandardWrapper
+
+
+ContainerBase <|-- StandardEngine
+ContainerBase <|-- StandardHost
+ContainerBase <|-- StandardContext
+ContainerBase <|-- StandardWrapper
+ContainerBase *-- StandardPipeline
+
+footer
+图 1 Tomcat architecture
+endfooter
+
+@enduml

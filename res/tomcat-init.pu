@@ -1,0 +1,159 @@
+@startuml
+
+actor user
+
+activate CatalinaProperties
+activate ClassLoaderFactory
+CatalinaProperties -> CatalinaProperties : loadProperties();
+
+user -> Bootstrap : main()
+activate Bootstrap
+    Bootstrap -> Bootstrap : init()
+    activate Bootstrap
+        Bootstrap -> Bootstrap : initClassLoaders()
+        activate Bootstrap
+            Bootstrap -> Bootstrap: createClassLoader()
+            activate Bootstrap
+                Bootstrap -> CatalinaProperties : getProperty("common.loader")
+                Bootstrap <-- CatalinaProperties : common.loader
+                Bootstrap -> ClassLoaderFactory : createClassLoader();
+                Bootstrap <-- ClassLoaderFactory : classLoader
+            deactivate Bootstrap
+        deactivate Bootstrap
+        Bootstrap -> Catalina : startupClass.newInstance();
+        activate Catalina
+            Bootstrap <-- Catalina : a instance of Catalina
+            Bootstrap -> Catalina : setParentClassLoader(sharedLoader)
+    deactivate Bootstrap
+    Bootstrap -> Bootstrap : setAwait(true)
+    activate Bootstrap
+        Bootstrap -> Catalina : setAwait(true)
+    deactivate Bootstrap
+    Bootstrap -> Bootstrap : load();
+    activate Bootstrap
+        Bootstrap -> Catalina : load();
+        Catalina -> Catalina : initDirs();
+        Catalina -> Catalina : initNaming();
+        Catalina -> Catalina : createStartDigester();
+        activate Catalina
+            Catalina -> Catalina : config digester rule set for server.xml
+            Catalina -> Digester : parse(); parse from config/server.xml
+            activate Digester
+                Digester -> StandardServer : newInstance();
+                activate StandardServer
+                    StandardServer -> StandardServer : set port and shutdown property
+                    StandardServer -> Catalina : setServer();
+                    Digester -> Listener : newInstance();
+                    activate Listener
+                        Listener -> Listener : set property
+                        Listener -> StandardServer : addLifeCycleListener()
+                    deactivate Listener
+                    Digester -> NamingResourcesImpl : newInstance()
+                    activate NamingResourcesImpl
+                        NamingResourcesImpl -> NamingResourcesImpl : setProperty
+                        NamingResourcesImpl -> StandardServer : setGlobalNamingResources();
+                    deactivate NamingResourcesImpl
+                    Digester -> StandardService : new Instance
+                    activate StandardService
+                        StandardService -> StandardService : set name property;
+                        StandardService -> StandardServer : addService();
+                        activate StandardServer
+                            StandardServer -> StandardService : setServer()
+                        deactivate StandardServer
+                        Digester -> Connector : newInstance()
+                        activate Connector
+                            Connector -> Http11NioProtocol : newInstance()
+                            activate Http11NioProtocol
+                                activate NioEndPoint
+                                activate NioSelectorPool
+                                NioEndPoint -> Http11NioProtocol : new NioEndPoint();
+                            deactivate Http11NioProtocol
+                            Connector -> Connector : set port,protocol,etc property
+                            Connector -> StandardService : addConnector()
+                        Digester -> StandardEngine : newInstance();
+                        activate StandardEngine
+                            StandardEngine -> Engine.StandardPipeline : new StandardPipeline(this);
+                            activate Engine.StandardPipeline
+                                Engine.StandardPipeline -> StandardEngine : setContainer()
+                                Engine.StandardPipeline -> StandardEngineValve : setBasic()
+                                activate StandardEngineValve
+                                deactivate StandardEngineValve
+                            deactivate Engine.StandardPipeline
+                            StandardEngine -> StandardEngine : addLifecycleListener(EngineConfig)
+                            StandardEngine -> StandardEngine : setproperty
+                            StandardEngine -> StandardService : setContainer()
+
+                            Digester -> LockOutRealm : newInstance()
+                            LockOutRealm -> StandardEngine : setRealm();
+
+                            Digester -> StandardHost : newInstance();
+                            activate StandardHost
+                                StandardHost -> Host.StandardPipeline : new StandardPipeline(this);
+                                activate Host.StandardPipeline
+                                    Host.StandardPipeline -> StandardHost : setContainer();
+                                    Host.StandardPipeline -> StandardHostValve : setBasic();
+                                    activate StandardHostValve
+                                    deactivate StandardHostValve
+                                deactivate Host.StandardPipeline
+                                StandardHost -> StandardEngine : getParentClassLoader();
+                                StandardEngine -> StandardService : getParentClassLoader();
+                                StandardService -> StandardServer : getParentClassLoader();
+                                StandardServer -> Catalina : getParentClassLoader();
+                                Catalina --> StandardHost : sharedClassLoader
+                                StandardHost -> StandardHost : setParentClassLoader()
+                                StandardHost -> StandardHost : addLifecycleListener(HostConfig);
+                                StandardHost -> StandardHost : setProperty
+                                StandardHost -> StandardEngine : addChild();
+                                activate StandardEngine
+                                    StandardEngine -> StandardHost : setParent();
+                                deactivate StandardEngine
+                                Digester -> AccessLogValve : newInstance();
+                                activate AccessLogValve
+                                    AccessLogValve -> AccessLogValve : setProperty
+                                    AccessLogValve -> StandardHost : addValve()
+                                deactivate AccessLogValve
+            deactivate Digester
+            Catalina -> StandardServer : setCatalina, setCatalinaBase, setCatalinaHome
+            StandardServer -> StandardServer: initStream();
+            Catalina -> StandardServer : init();
+            activate StandardServer
+                StandardServer -> StandardServer : initInternal()
+                activate StandardServer
+                    StandardServer -> StandardService : init()
+                    activate StandardService
+                        StandardService -> StandardService : initInternal()
+                        activate StandardService
+                            StandardService -> StandardEngine : init()
+                            activate StandardEngine
+                                StandardEngine -> StandardEngine : reconfigureStartStopExecutor()
+                            deactivate StandardEngine
+                            StandardService -> Connector : init()
+                            activate Connector
+                                Connector -> Connector : new CoyoteAdapter(this);
+                                Connector -> Http11NioProtocol : init();
+                                activate Http11NioProtocol
+                                    Http11NioProtocol -> Http11NioProtocol : getName();
+                                    Http11NioProtocol -> NioEndPoint : setName()
+                                    activate NioEndPoint
+                                        NioEndPoint -> NioEndPoint : bind();
+                                        activate NioEndPoint
+                                            NioEndPoint -> NioEndPoint : initServerSocket();
+                                            NioEndPoint -> NioSelectorPool : open();
+                                        deactivate NioEndPoint
+                                    deactivate NioEndPoint
+                                deactivate Http11NioProtocol
+                            deactivate Connector
+                        deactivate StandardService
+                    deactivate StandardService
+                deactivate StandardServer
+            deactivate StandardServer
+        deactivate Catalina
+    deactivate Bootstrap
+    Bootstrap -> Bootstrap : start();
+deactivate Bootstrap
+
+footer
+图 2 Tomcat init
+endfooter
+
+@enduml

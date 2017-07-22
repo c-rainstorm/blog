@@ -1,0 +1,46 @@
+@startuml
+
+activate ContainerBackgroundProcessor
+    ContainerBackgroundProcessor -> ContainerBackgroundProcessor : processChildren(StandardEngine);
+    activate ContainerBackgroundProcessor
+        ContainerBackgroundProcessor -> StandardEngine : backgroundProcess()
+        activate StandardEngine
+            StandardEngine -> Cluster: backgroundProcess()
+            StandardEngine -> Realm : backgroundProcess();
+            StandardEngine -> Valve : backgroundProcess();
+        deactivate StandardEngine
+        ContainerBackgroundProcessor -> ContainerBackgroundProcessor : processChildren(StandardHost)
+        activate ContainerBackgroundProcessor
+            ContainerBackgroundProcessor -> StandardHost : backgroundProcess()
+            activate StandardHost
+                StandardHost -> HostConfig : fireLifecycleEvent(PERIODIC_EVENT)
+                activate HostConfig
+                    HostConfig -> HostConfig : check()
+                    activate HostConfig
+                        HostConfig -> HostConfig : deployApps()[Hotdeploy application]
+                    deactivate HostConfig
+                deactivate HostConfig
+            deactivate StandardHost
+            ContainerBackgroundProcessor -> ContainerBackgroundProcessor : processChildren(StandardContext)
+            activate StandardContext
+                ContainerBackgroundProcessor -> StandardContext : backgroundProcess()
+                StandardContext -> WebappLoader : backgroundProcess();
+                activate WebappLoader
+                    WebappLoader -> StandardContext : reload()
+                    activate StandardContext
+                        StandardContext -> StandardContext : setPaused(true);
+                        StandardContext -> StandardContext : stop();
+                        StandardContext -> StandardContext : start();
+                        StandardContext -> StandardContext : setPaused(false);
+                    deactivate StandardContext
+                deactivate WebappLoader
+            deactivate StandardContext
+        deactivate ContainerBackgroundProcessor
+    deactivate ContainerBackgroundProcessor
+deactivate ContainerBackgroundProcessor
+
+footer
+图 5 background thread
+endfooter
+
+@enduml
