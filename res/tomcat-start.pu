@@ -100,6 +100,11 @@ activate Bootstrap
                             StandardEngine -> ContainerBackgroundProcessor : start();
                         deactivate StandardEngine
                     deactivate StandardEngine
+                    StandardService -> MapperListener : start();
+                    activate MapperListener
+                        MapperListener -> MapperListener : addListeners(StandardEngine)
+                        MapperListener -> MapperListener : registerHost()
+                    deactivate MapperListener
                     StandardService -> Connector : start();
                     activate Connector
                         Connector -> Http11NioProtocol : start()

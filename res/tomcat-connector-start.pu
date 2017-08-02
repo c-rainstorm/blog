@@ -1,0 +1,97 @@
+@startuml
+activate Connector
+Http11NioProtocol <-- NioEndpoint: new NioEndpoint();
+Http11NioProtocol <-- ConnectionHandler : new ConnectionHandler()
+Http11NioProtocol -> NioEndpoint : setHandler(ConnectionHandler)
+Connector <-- Http11NioProtocol : newInstance()
+
+-> Connector
+Connector -> Connector : init()
+    activate Connector
+        Connector <-- CoyoteAdapter : new CoyoteAdapter()
+        Connector -> Http11NioProtocol : setAdapter()
+        Connector -> Http11NioProtocol : init();
+        activate Http11NioProtocol
+            Http11NioProtocol -> NioEndpoint : init();
+            activate NioEndpoint
+                NioEndpoint -> NioEndpoint : bind()
+                activate NioEndpoint
+                    NioEndpoint -> NioEndpoint : initServerSocket()\n创建一个 ServerSocket \n默认绑定到 localhost:8080;
+                    activate NioEndpoint
+                    deactivate NioEndpoint
+                    NioEndpoint -> NioSelectorPool : open()
+                    activate NioSelectorPool
+                        NioSelectorPool -> NioSelectorPool : getSharedSelector()
+                        activate EPollSelectorImpl
+                            EPollSelectorImpl --> NioSelectorPool : Selector.open()
+                        deactivate EPollSelectorImpl
+                        note over EPollSelectorImpl
+                        sun.nio.ch
+                        end note
+                        NioBlockingSelector --> NioSelectorPool : new NioBlockingSelector()
+                        NioSelectorPool -> NioBlockingSelector : open(SharedSelector)
+                        activate NioBlockingSelector
+                            BlockPoller --> NioBlockingSelector : new BlockPoller();
+                            NioBlockingSelector -> BlockPoller : start();
+                            activate BlockPoller
+                                ' todo background thread
+                            deactivate BlockPoller
+                        deactivate NioBlockingSelector
+                    deactivate NioSelectorPool
+                deactivate NioEndpoint
+            deactivate NioEndpoint
+        deactivate Http11NioProtocol
+    deactivate Connector
+deactivate Connector
+
+-> Connector
+activate Connector
+    Connector -> Connector : start()
+    activate Connector
+        Connector -> Http11NioProtocol : start();
+        activate Http11NioProtocol
+            Http11NioProtocol -> NioEndpoint : start()
+            activate NioEndpoint
+                NioEndpoint -> NioEndpoint : createExecutor()
+                activate NioEndpoint
+                    TaskQueue --> NioEndpoint : new TaskQueue();
+                    TaskThreadFactory --> NioEndpoint : new TaskThreadFactory()
+                    ThreadPoolExecutor --> NioEndpoint : new ThreadPoolExecutor(getMinSpareThreads(), getMaxThreads(), 60, TimeUnit.SECONDS,taskqueue, taskThreadFactory);
+                    activate ThreadPoolExecutor
+                        ThreadPoolExecutor -> ThreadPoolExecutor : prestartAllCoreThreads
+                        activate ThreadPoolExecutor
+                            ThreadPoolExecutor -> ThreadPoolExecutor : addWorker();
+                            activate ThreadPoolExecutor
+                                activate Worker
+                                    Worker -> TaskThreadFactory : newThread()
+                                    activate TaskThreadFactory
+                                        TaskThreadFactory --> Worker : TaskThread()
+                                    deactivate TaskThreadFactory
+                                    ThreadPoolExecutor <-- Worker : new Worker();
+                                deactivate Worker
+                                ThreadPoolExecutor -> ThreadPoolExecutor : add(Worker);
+                                ThreadPoolExecutor -> Worker : start() each work is a background thread
+                            deactivate ThreadPoolExecutor
+                        deactivate ThreadPoolExecutor
+
+                    deactivate ThreadPoolExecutor
+                deactivate NioEndpoint
+                NioEndpoint <-- Poller : new Poller(),each Poller is a background thread
+                activate Poller
+                    EPollSelectorImpl --> Poller : Selector.open(); each Poller has its own selector
+                deactivate Poller
+                NioEndpoint -> NioEndpoint : startAcceptorThreads()
+                activate NioEndpoint
+                    Acceptor --> NioEndpoint : new Acceptor()
+                    activate Acceptor
+                        NioEndpoint -> Acceptor: start(); An Acceptor is a background thread.
+                    deactivate Acceptor
+                deactivate NioEndpoint
+            deactivate NioEndpoint
+        deactivate Http11NioProtocol
+    deactivate Connector
+deactivate Connector
+footer
+figure 1 - tomcat connector start
+endfooter
+@enduml

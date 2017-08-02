@@ -1,0 +1,38 @@
+@startuml tomcat-request-process-container
+
+-> StandardEngineValve
+activate StandardEngineValve
+    StandardEngineValve -> StandardHostValve : request.getHost().getPipeline()\n.getFirst().invoke()
+    activate StandardHostValve
+        ... wait for other host valve excute complete ...
+        StandardHostValve -> StandardContextValve : request.getContext().getPipeline()\n.getFirst().invoke()
+        activate StandardContextValve
+            ... wait for other Context valve excute complete ...
+            StandardContextValve -> StandardWrapperValve: request.getWrapper().getPipeline()\n.getFirst().invoke()
+            activate StandardWrapperValve
+                ... wait for other wrapper valve excute complete ...
+                StandardWrapperValve -> StandardWrapper : allocate()
+                activate StandardWrapper
+                    StandardWrapper -> StandardWrapper : loadServlet()
+                    activate StandardWrapper
+                        ' todo loadServlet
+                    deactivate StandardWrapper
+                    StandardWrapper -> StandardWrapper : initServlet()
+                    StandardWrapper --> StandardWrapperValve : Servlet
+                deactivate StandardWrapper
+                StandardWrapperValve -> ApplicationFilterFactory : createFilterChain()
+                activate ApplicationFilterFactory
+                    StandardWrapperValve <-- ApplicationFilterFactory : ApplicationFilterChain
+                deactivate ApplicationFilterFactory
+                StandardWrapperValve -> ApplicationFilterChain : doFilter()
+                activate ApplicationFilterChain
+                    ... wait for all filter execute complete ...
+                    ApplicationFilterChain -> Servlet : service();
+                    activate Servlet
+                    deactivate Servlet
+                deactivate ApplicationFilterChain
+            deactivate StandardWrapperValve
+        deactivate StandardContextValve
+    deactivate StandardHostValve
+deactivate StandardEngineValve
+@enduml

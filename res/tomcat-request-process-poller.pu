@@ -1,0 +1,34 @@
+@startuml tomcat-request-process-poller
+activate Poller
+    Poller -> Poller : select(1000) block here, \n wait for wakeup or timeout
+
+     -> Poller
+
+    Poller -> Poller : events()
+    activate Poller
+        Poller -> PollerEvent : run();
+        activate PollerEvent
+            PollerEvent -> SocketChannel : register()
+            activate SocketChannel
+                SocketChannel -> EPollSelectorImpl : register()
+                activate EPollSelectorImpl
+                    EPollSelectorImpl --> SocketChannel : SelectionKey
+                deactivate EPollSelectorImpl
+                SocketChannel -> SocketChannel : addKey()
+            deactivate SocketChannel
+        deactivate PollerEvent
+    deactivate Poller
+    ... wait for the socket be ready to read ...
+    Poller -> NioEndPoint : processKey()
+    activate NioEndPoint
+        NioEndPoint -> NioEndPoint : processSocket(SocketEvent.OPEN_READ)
+        activate NioEndPoint
+            NioEndPoint -> NioEndPoint : createSocketProcessor();
+            NioEndPoint -> ThreadPoolExecutor : execute(SocketProcesser);
+            activate ThreadPoolExecutor
+                ThreadPoolExecutor -> ThreadPoolExecutor : add to workQueue
+            deactivate ThreadPoolExecutor
+        deactivate NioEndPoint
+    deactivate NioEndPoint
+deactivate Poller
+@enduml

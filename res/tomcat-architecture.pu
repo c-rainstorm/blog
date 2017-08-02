@@ -7,8 +7,26 @@ class Catalina
 class StandardServer
 
 class StandardService
-
 class Connector
+
+class Http11NioProtocol
+class CoyoteAdapter
+class NioEndpoint
+
+class MapperListener
+class Mapper
+
+Connector *-- Http11NioProtocol
+Connector *-- CoyoteAdapter
+CoyoteAdapter ..> StandardEngine
+Http11NioProtocol *-- NioEndpoint
+
+StandardService *-- MapperListener
+StandardService *-- Mapper
+
+MapperListener *-- Mapper
+
+
 interface Container
 class ContainerBase
 Container <|.. ContainerBase
@@ -34,6 +52,9 @@ ContainerBase <|-- StandardHost
 ContainerBase <|-- StandardContext
 ContainerBase <|-- StandardWrapper
 ContainerBase *-- StandardPipeline
+
+
+
 
 footer
 图 1 Tomcat architecture

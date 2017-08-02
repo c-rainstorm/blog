@@ -1,0 +1,25 @@
+@startuml tomcat-request-process-acceptor
+activate Acceptor
+Acceptor -> NioEndPoint : serverSocketAccept()
+    activate NioEndPoint
+        ... block for new connection ...
+        Acceptor <-- NioEndPoint : serverSock.accept()
+        Acceptor -> NioEndPoint : setSocketOptions(socket)
+        activate NioEndPoint
+            NioEndPoint <-- NioChannel : new NioChannel()
+            NioEndPoint -> Poller : register(NioChannel)
+            activate Poller
+                Poller <-- NioSocketWrapper : new NioSocketWrapper(NioChannel)
+                Poller <-- PollerEvent : new PollerEvent()
+                Poller -> Poller : addEvent()
+                activate Poller
+                    Poller ->  : wakeup()
+                deactivate Poller
+            deactivate Poller
+        deactivate NioEndPoint
+    deactivate NioEndPoint
+deactivate Acceptor
+footer
+figure 2 - accept new connection
+endfooter
+@enduml

@@ -1,0 +1,54 @@
+@startuml
+
+activate Worker
+    Worker -> ThreadPoolExecutor : runWorker()
+    activate ThreadPoolExecutor
+        ThreadPoolExecutor -> ThreadPoolExecutor : getTask()
+        activate ThreadPoolExecutor
+            ThreadPoolExecutor -> BlockingQueue : take()\n [workQueue is a BlockingQueue,\n so it will block when workQueue is empty]
+            activate BlockingQueue
+            ... wait for new task add to workQueue ...
+            BlockingQueue --> ThreadPoolExecutor : SocketProcessor
+            deactivate BlockingQueue
+        deactivate ThreadPoolExecutor
+        ThreadPoolExecutor -> SocketProcessor : run()
+        activate SocketProcessor
+            SocketProcessor -> ConnectionHandler : process()
+            activate ConnectionHandler
+                ConnectionHandler -> Http11NioProtocol : createProcessor()
+                activate Http11NioProtocol
+                    Http11Processor --> Http11NioProtocol : new  Http11Processor();
+                    Http11NioProtocol -> Http11Processor : setAdapter()
+                    Http11NioProtocol --> ConnectionHandler : Http11Processor
+                deactivate Http11NioProtocol
+                ConnectionHandler -> ConnectionHandler : register()
+                ConnectionHandler -> Http11Processor : process()
+                activate Http11Processor
+                    Http11Processor -> Http11Processor : service()
+                    activate Http11Processor
+                        Http11Processor -> Http11Processor : parseRequestLine()
+                        Http11Processor -> Http11Processor : parseHeaders();
+                        Http11Processor -> Http11Processor : prepareRequest()
+                        Http11Processor -> CoyoteAdapter: service()
+                        activate CoyoteAdapter
+                            CoyoteAdapter -> Connector : createRequest();
+                            Connector --> CoyoteAdapter : Request
+                            CoyoteAdapter -> Connector : createResponse();
+                            Connector --> CoyoteAdapter : Response
+                            CoyoteAdapter -> CoyoteAdapter : postParseRequest()
+                            activate CoyoteAdapter
+                                CoyoteAdapter -> Mapper : connector.getService().getMapper().map()\n map this request to Host,Context and Wrapper
+                            deactivate CoyoteAdapter
+                            CoyoteAdapter -> StandardEngineValve : connector.getService().getContainer()\n.getPipeline().getFirst().invoke()
+                            activate StandardEngineValve
+                            deactivate StandardEngineValve
+                        deactivate CoyoteAdapter
+                    deactivate Http11Processor
+                deactivate Http11Processor
+            deactivate ConnectionHandler
+        deactivate SocketProcessor
+    deactivate ThreadPoolExecutor
+
+deactivate Worker
+
+@enduml

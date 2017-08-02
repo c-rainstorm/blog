@@ -2,13 +2,6 @@
 
 这个题目命的其实是很大的，写的时候还是很忐忑的，但我尽可能把这个过程描述清楚。因为这是读过源码以后写的总结，在写的过程中可能会忽略一些前提条件，如果有哪些比较突兀就出现，或不好理解的地方可以给我提 Issue，我会尽快补充修订相关内容。
 
-最近在看 Tomcat 架构，本来准备写三篇的
-1. 谈谈 Tomcat 架构及启动过程
-1. 谈谈 Tomcat 应用部署
-1. 谈谈 Tomcat 请求处理流程
-
-但是在看源码的过程中发现启动过程中也包含了部署过程，所以前两篇就合为一篇了。本来打算三条线都看完以后再写总结的，但是请求处理流程中涉及到 NIO 及并发编程相关的内容，这两块我都不是太熟，看起来难度稍大了，所以先将前两部分写完，请求处理部分等把预备知识准备好以后再写。所以请求处理部分涉及到的一些核心类无法体现到架构和启动流程上，相关内容也会再写请求处理部分时加以修订。
-
 很多东西在时序图中体现的已经非常清楚了，没有必要再一步一步的作介绍，所以本文以图为主，然后对部分内容加以简单解释。
 
 - 绘制图形使用的工具是 [PlantUML](http://plantuml.com/) + [Visual Studio Code](https://code.visualstudio.com/) + [PlantUML Extension](https://marketplace.visualstudio.com/items?itemName=jebbs.plantuml)
@@ -46,6 +39,11 @@
 1. `Catalina` 解析 `$CATALINA_BASE/conf/server.xml` 文件并创建 `StandardServer`、`StandardService`、`StandardEngine`、`StandardHost` 等
 1. `StandardServer` 代表的是整个 Servlet 容器，他包含一个或多个 `StandardService`
 1. `StandardService` 包含一个或多个 `Connector`，和一个 `Engine`，`Connector` 和 `Engine` 都是在解析 `conf/server.xml` 文件时创建的，`Engine` 在 Tomcat 的标准实现是 `StandardEngine`
+1. `MapperListener` 实现了 `LifecycleListener` 和 `ContainerListener` 接口用于监听容器事件和生命周期事件。该监听器实例监听所有的容器，包括 `StandardEngine`、`StandardHost`、`StandardContext`、`StandardWrapper`，当容器有变动时，注册容器到 `Mapper`。
+1. `Mapper` 维护了 URL 到容器的映射关系。当请求到来时会根据 `Mapper` 中的映射信息决定将请求映射到哪一个 `Host`、`Context`、`Wrapper`。
+1. `Http11NioProtocol` 用于处理 HTTP/1.1 的请求
+1. `NioEndpoint` 是连接的端点，在请求处理流程中该类是核心类，会重点介绍。
+1. `CoyoteAdapter` 用于将请求从 Connctor 交给 Container 处理。使 Connctor 和 Container 解耦。
 1. `StandardEngine` 代表的是 Servlet 引擎，用于处理 `Connector` 接受的 Request。包含一个或多个 `Host`（虚拟主机）, `Host` 的标准实现是 `StandardHost`。
 1. `StandardHost` 代表的是虚拟主机，用于部署该虚拟主机上的应用程序。通常包含多个 `Context` (Context 在 Tomcat 中代表应用程序)。`Context` 在 Tomcat 中的标准实现是 `StandardContext`。
 1. `StandardContext` 代表一个独立的应用程序，通常包含多个 `Wrapper`，一个 `Wrapper` 容器封装了一个 Servlet，`Wrapper` 的标准实现是 `StandardWrapper`。
@@ -87,6 +85,10 @@
     1. 部署 `$CATALINA_BASE/webapps` 下所有已解压的目录，并添加到 `StandardHost`。
     - 特别的，添加到 `StandardHost` 时，会直接调用 `StandardContext` 的 `start()` 方法来启动应用程序。启动应用程序步骤请看 Context Start 一节。
 1. 在 `StandardEngine` 和 `StandardContext` 启动时都会调用各自的 `threadStart()` 方法，该方法会创建一个新的后台线程来处理该该容器和子容器及容器内各组件的后台事件。`StandardEngine` 会直接创建一个后台线程，`StandardContext` 默认是不创建的，和 `StandardEngine` 共用同一个。后台线程处理机制是周期调用组件的 `backgroundProcess()` 方法。详情请看 Background process 一节。
+1. `MapperListener`
+    - `addListeners(engine)` 方法会将该监听器添加到 `StandardEngine` 和它的所有子容器中
+    - `registerHost()` 会注册所有的 `Host` 和他们的子容器到 `Mapper` 中，方便后期请求处理时使用。
+    - 当有新的应用(`StandardContext`)添加进来后，会触发 Host 的容器事件，然后通过 `MapperListener` 将新应用的映射注册到 `Mapper` 中。
 1. Start 工作都做完以后 `Catalina` 会创建一个 `CatalinaShutdownHook` 并注册到 JVM。`CatalinaShutdownHook` 继承了 `Thread`,是 `Catalina` 的内部类。其 `run` 方法中直接调用了 `Catalina` 的 `stop()` 方法来关闭整个服务器。注册该 Thread 到 JVM 的原因是防止用户非正常终止 Tomcat，比如直接关闭命令窗口之类的。当直接关闭命令窗口时，操作系统会向 JVM 发送一个终止信号，然后 JVM 在退出前会逐一启动已注册的 ShutdownHook 来关闭相应资源。
 
 ### Context Start
