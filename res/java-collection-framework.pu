@@ -1,4 +1,4 @@
-@startuml
+@startuml java-collection-framework
 
 title 图解 Java Collection Framwork
 
@@ -45,6 +45,17 @@ class LinkedList
 class ArrayList
 class Vector
     class Stack
+note top of Vector
+1. 底层数组实现
+2. 默认容量: 10
+3. 扩容默认为原容量的 2 倍
+4. 线程安全
+5. 迭代器 fail-fast 的原理:
+   Vector 中维护了一个版本号 modCount,每次 Vector 的修改都会增加该值。
+   当创建迭代器时将版本号 modCount 保存到迭代器中的 expectedModCount 中，
+   每次调用迭代器的方法时都会比较 expectedModCount 和 modCount，
+   如果不一致则抛出异常
+end note
 class PriorityQueue
 class HashSet
     class LinkedHashSet
@@ -55,6 +66,37 @@ class EnumSet
 class EnumMap
 class HashMap
     class LinkedHashMap
+note right of HashMap
+1. 数组 + 链表方式存储
+2. 默认容量： 16(2^n 为宜,若定义的初始容量不是 2^n，容量会定义为大于该初始容量的最小 2^n)
+     - 例如：初始容量为 13，则真正的容量是 16.
+3. put:
+   1. 索引计算 : ((key.hashCode() ^ (key.hashCode() >>> 16)) & (table.length - 1))
+   2. 在链表中查找，并记录链表长度，若链表长度达到了 TREEIFY_THRESHOLD(8)，则将该链转成红黑树。
+   3. 若在链表中找到了，则替换旧值，若未找到则继续
+   3. 当总元素个数超过容量*加载因子时，扩容为原来 2 倍并重新散列
+       - (元素的下标要么不变，要么变为【原下标+原容量】)。
+   4. 将新元素加到链表尾部
+4. 线程不安全
+end note
+class Hashtable
+
+note right of Hashtable
+1. 数组 + 链表方式存储
+2. 默认容量： 11(质数 为宜)
+3. put:
+   1. 索引计算 : （key.hashCode() & 0x7FFFFFFF）% table.length
+   2. 若在链表中找到了，则替换旧值，若未找到则继续
+   3. 当总元素个数超过容量*加载因子时，扩容为原来 2 倍并重新散列。
+   4. 将新元素加到链表头部
+4. 对修改 Hashtable 内部共享数据的方法添加了 synchronized，保证线程安全。
+end note
+
+note "HashMap 和 Hashtable 的区别\n1. 默认容量不同。\n2. 索引计算方式不同。\n3. HashMap 特有的将过长链表转换为红黑树。\n4. 新元素的位置不同。\n5. 线程安全性" as diffHashMapAndHashtable
+
+diffHashMapAndHashtable .. HashMap
+diffHashMapAndHashtable .. Hashtable
+
 class TreeMap
 class WeakHashMap
 
@@ -78,6 +120,7 @@ Deque <|.. ArrayDeque
 Map <|.. EnumMap
 Map <|.. HashMap
 HashMap <|-- LinkedHashMap
+Map <|.. Hashtable
 NavigableMap <|.. TreeMap
 Map <|.. WeakHashMap
 
@@ -122,6 +165,14 @@ class CopyOnWriteArrayList
 class ConcurrentLinkedDeque
 
 class ConcurrentHashMap
+note right of ConcurrentHashMap
+与 HashMap 的区别
+    1. 索引计算消除了最高位的影响
+    2. 默认容量： 16(若定义了初始容量(c)，容量会定义为大于(c + (c >>> 1) +1) 的最小 2^n)
+        - 例如：初始容量为 13，则真正的容量是 32.
+    3. 线程安全，并发性能较好
+        - 并发性能好的原因是 ConcurrentHashMap 并不是定义 synchronized 方法，而是在链表头上同步，不同的链表之间是互不影响的。
+end note
 class ConcurrentSkipListMap
 
 BlockingQueue <|.. ArrayBlockingQueue
