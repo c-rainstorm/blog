@@ -1,0 +1,43 @@
+@startuml java-thread-state
+
+activate New
+activate Runnable
+activate Running
+activate Blocked
+activate Waiting
+activate Timed_Waiting
+activate Terminated
+
+-> New : new Thread();
+New -> Runnable : start()
+
+Runnable -> Running : 获得 CPU
+Running -> Runnable : 1. 时间片结束\n2. Thread.yield()
+
+...
+
+Running -> Blocked : synchronized
+Blocked --> Runnable : 获得了管程锁
+Blocked -> Terminated : exception
+
+...
+
+Running -> Waiting : 1. Object.wait()\n2. Thread.join()\n3. LockSupport.park()
+
+Waiting --> Blocked : 1. Object.notify()/notifyAll()
+Waiting --> Runnable : 1. join finish\n2. LockSupport.unpark()
+Waiting -> Terminated : exception
+
+...
+
+Running -> Timed_Waiting : 1. Thread.sleep(t)\n2. Object.wait(t)\n3. Thread.join(t)\n4. LockSupport.parkNanos(t)\n5. LockSupport.parkUntil(t)
+
+Timed_Waiting --> Runnable : 1. sleep finish\n2. join finish
+Timed_Waiting --> Blocked : 1. Object.notify()/notifyAll()
+Timed_Waiting --> Runnable : 1. LockSupport.unpark()\n2. timeout
+Timed_Waiting -> Terminated : exception
+...
+
+Running -> Terminated : complete
+
+@enduml
