@@ -1,0 +1,77 @@
+@startuml thread-pool-executor-demo
+
+participant ThreadPoolExecutorDemo
+participant ThreadPoolExecutor
+participant Worker
+participant Thread
+participant Executors
+participant DefaultThreadFactory
+
+ThreadPoolExecutorDemo -> ThreadPoolExecutor : new ThreadPoolExecutor();
+activate ThreadPoolExecutor
+    ThreadPoolExecutor -> ThreadPoolExecutor : ctl = new AtomicInteger(ctlOf(RUNNING, 0));
+    activate ThreadPoolExecutor
+    deactivate ThreadPoolExecutor
+    ThreadPoolExecutor -> Executors : Executors.defaultThreadFactory()
+    ThreadPoolExecutor <-- DefaultThreadFactory : java.util.concurrent.Executors.DefaultThreadFactory;
+    ThreadPoolExecutorDemo <-- ThreadPoolExecutor : ThreadPoolExecutor instance
+deactivate ThreadPoolExecutor
+
+...
+
+ThreadPoolExecutorDemo -> ThreadPoolExecutor : allowCoreThreadTimeOut(true)
+
+...
+
+ThreadPoolExecutorDemo -> ThreadPoolExecutor: execute(command);
+activate ThreadPoolExecutor
+    ThreadPoolExecutor -> ThreadPoolExecutor : addWorker(command, true)
+    activate ThreadPoolExecutor
+        ThreadPoolExecutor -> Worker: new Worker(command);
+        activate Worker
+            Worker -> DefaultThreadFactory : newThread(this);
+            Worker <-- DefaultThreadFactory : Thread instance
+            ThreadPoolExecutor <-- Worker : Worker instance
+        deactivate Worker
+        ThreadPoolExecutor -> ThreadPoolExecutor : workers.add(worker)
+        ThreadPoolExecutor -> Thread : Thread start()
+    deactivate ThreadPoolExecutor
+deactivate ThreadPoolExecutor
+
+ThreadPoolExecutorDemo -> ThreadPoolExecutor : shutdown()
+activate ThreadPoolExecutor
+    ThreadPoolExecutor -> ThreadPoolExecutor : advanceRunState(SHUTDOWN);
+deactivate ThreadPoolExecutor
+
+... worker thread start ...
+
+Thread -> Worker : run()
+activate Worker
+    Worker -> ThreadPoolExecutor : runWorker(this);
+    activate ThreadPoolExecutor
+        ThreadPoolExecutor -> ThreadPoolExecutor : beforeExecute(wt, task);
+        ThreadPoolExecutor -> command : run()
+        activate command
+            note over command
+                需要执行的任务，当前任务是
+                System.out.println("Hello world");
+            end note
+        deactivate command
+        ThreadPoolExecutor -> ThreadPoolExecutor : afterExecute(task, thrown);
+        ThreadPoolExecutor -> ThreadPoolExecutor : getTask()
+        activate ThreadPoolExecutor
+            ThreadPoolExecutor -> ThreadPoolExecutor : compareAndDecrementWorkerCount()
+        deactivate ThreadPoolExecutor
+        ThreadPoolExecutor -> ThreadPoolExecutor : processWorkerExit()
+        activate ThreadPoolExecutor
+            ThreadPoolExecutor -> ThreadPoolExecutor : tryTerminate()
+            activate ThreadPoolExecutor
+                ThreadPoolExecutor -> ThreadPoolExecutor : ctl.compareAndSet(c, ctlOf(TIDYING, 0))
+                ThreadPoolExecutor -> ThreadPoolExecutor : terminated()
+                ThreadPoolExecutor -> ThreadPoolExecutor : ctl.set(ctlOf(TERMINATED, 0));
+            deactivate ThreadPoolExecutor
+        deactivate ThreadPoolExecutor
+    deactivate ThreadPoolExecutor
+deactivate Worker
+
+@enduml

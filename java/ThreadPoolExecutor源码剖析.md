@@ -147,6 +147,49 @@
 
 ## 任务处理流程
 
+我们以一个简单例子来剖析一下整个过程。
+
+```java
+
+package me.rainstorm;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+/**
+ *
+ * @author baochen.zhang
+ * @date 2017.12.4
+ */
+public class ThreadPoolExecutorDemo {
+    private static final int THREAD_POOL_SIZE = Runtime.getRuntime().availableProcessors() + 2;
+    private static ExecutorService exe = new ThreadPoolExecutor(THREAD_POOL_SIZE, THREAD_POOL_SIZE,
+            60, TimeUnit.SECONDS, new LinkedBlockingDeque<>(100));
+
+    {
+        ((ThreadPoolExecutor)exe).allowCoreThreadTimeOut(true);
+    }
+
+    public static void main(String[] args) {
+        exe.execute(() -> System.out.println("Hello world"));
+
+        exe.shutdown();
+        exe = null;
+    }
+}
+
+```
+
+![](../res/thread-pool-executor-demo.png)
+
+1. `ctl` 变量之前已经提到了，作为一个控制变量用来控制线程池的状态和工作线程数。默认值是 `RUNNING | 0`，即状态为 `RUNNING`，Worker 线程数为 0;
+1. 在 Demo 中并未指定线程工厂，`ThreadPoolExecutor` 使用 `Executors` 提供的默认线程工厂。
+1. 因为只有一个任务，所以 `main` 方法中在提交完这个任务后，直接调用了 `shutdown()` 方法，并将其赋为 `null` 便于在任务执行完毕后回收资源，一般情况下推荐在所有任务都提交到线程池以后再调用 `shutdown`，否则之后的任务直接会被拒绝掉。
+1. 因为只有一个任务，且允许核心线程超时，所以该线程在 `getTask()` 过程中会超时，然后返回 `null`，进入 `processWorkerExit()` 流程。
+1. 线程池在进入 `TERMINATED` 状态后就可以被 GC 了。
+
 ## 最佳实践
 
 一般情况下使用 `Executors` 的工厂方法来创建即可适用于大多数场景。需要配置的话参考 个性定制 来配置更合适自己项目的 `ThreadPoolExecutor`。
@@ -161,3 +204,4 @@
 1. [Java SE 9 & JDK 9 -- Source Code](.)
 1. [What is Daemon thread in Java?](https://stackoverflow.com/questions/2213340/what-is-daemon-thread-in-java)
 1. [深入理解java线程池—ThreadPoolExecutor](http://www.jianshu.com/p/ade771d2c9c0)
+1. [Java 中, 为什么一个对象的实例方法在执行完成之前其对象可以被 GC 回收?](https://www.zhihu.com/question/51244545)
