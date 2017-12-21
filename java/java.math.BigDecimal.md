@@ -132,11 +132,11 @@ public static final MathContext DECIMAL128 =
 1. `private final BigInteger intVal;`
     - 整数域。(整数域超过 18 位时使用)
 1. `private final transient long intCompact;`
-    - 整数域。整数域在 long 能够表示的范围内使用，超出能表示范围会被赋为 `Long.MIN_VALUE`，代表整数域此时使用 `intVal` 来表示
+    - 整数域。整数域在 long 能够表示的范围内使用，超出能表示范围会被赋为 `Long.MIN_VALUE`，代表整数域此时使用 `intVal` 来表示
 1. `private final int scale;`
     - 缩放比例。也代表小数点右侧的数字数，整数域相同，缩放比例越大表示的数越小。
 1. `private transient int precision;`
-    - 精度。代表从左侧第一个非 0 数字开始到最后一个数字为止的数字个数。 `precision - scale` 值为正数时代表整数部分的位数。负数时表示小数点右侧 0 的个数且该数小于 1。
+    - 精度。代表从左侧第一个非 0 数字开始到最后一个数字为止的数字个数。 `precision - scale` 值为正数时代表整数部分的位数。负数时表示小数点右侧 0 的个数且该数小于 1。
 1. `private transient String stringCache;`
     - `String` 表示的缓存。该值只赋值一次。
 
