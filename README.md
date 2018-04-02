@@ -8,7 +8,7 @@
 
 ## 目录简介
 
-```
+```tree
 .
 |-- LICENSE
 |-- README.md
@@ -18,6 +18,8 @@
 |   `-- 常见排序算法实现.md
 |-- common
 |   `-- unicodeStandard.md
+|-- devops
+|   `-- 本机搭建三节点k8s集群.md
 |-- database
 |   `-- Mysql-clear-database.md
 |-- interview
