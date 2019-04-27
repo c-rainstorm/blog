@@ -8,6 +8,7 @@
 
 - [Iterable 接口](#iterable-%E6%8E%A5%E5%8F%A3)
   - [`iterator()`](#iterator)
+    - [`ConcurrentModificationException`](#concurrentmodificationexception)
   - [`forEach(Consumer<? super T> action)`](#foreachconsumer-super-t-action)
   - [`spliterator()`](#spliterator)
 
@@ -20,22 +21,92 @@
 实现了这个接口的类可以使用 [for-each][2] 遍历集合。
 
 ```java
-    @Test
-    public void test1() {
-        for (Integer item : list) {
-            LOGGER.debug(item);
-        }
+@Test
+public void test1() {
+    for (Integer item : list) {
+        LOGGER.debug(item);
     }
+}
 
-    @Test
-    public void test2() {
-        Integer[] rawArray = list.toArray(new Integer[0]);
-        int sum = 0;
-        for (int item : rawArray) {
-            sum += item;
-        }
-        LOGGER.debug(sum);
+@Test
+public void test2() {
+    Integer[] rawArray = list.toArray(new Integer[0]);
+    int sum = 0;
+    for (int item : rawArray) {
+        sum += item;
     }
+    LOGGER.debug(sum);
+}
+```
+
+### `ConcurrentModificationException`
+
+在使用迭代器遍历集合的时候，不能进行任何变更集合（添加/删除等）的操作，因为这些操作会变更集合当前的版本号，如果版本号在遍历过程中被修改，在迭代遍历调用 `next` 方法时会检测到。
+
+并发修改的 demo 【错误的使用方式】
+
+```java
+for (Integer item : list) {
+    list.add(item);
+}
+```
+
+`ArrayList` 遍历的 next 实现
+
+```java
+public E next() {
+    // 检测遍历过程中的修改
+    checkForComodification();
+    int i = cursor;
+    if (i >= size)
+        throw new NoSuchElementException();
+    Object[] elementData = ArrayList.this.elementData;
+    if (i >= elementData.length)
+        throw new ConcurrentModificationException();
+    cursor = i + 1;
+    return (E) elementData[lastRet = i];
+}
+
+final void checkForComodification() {
+    // 如果集合被修改，抛异常
+    if (modCount != expectedModCount)
+        throw new ConcurrentModificationException();
+}
+```
+
+如果我们想在迭代器遍历的时候删除指定元素，可以使用迭代器的 remove 方法。
+下面是 `java.util.AbstractCollection#clear` 方法的默认实现。
+
+```java
+public void clear() {
+    Iterator<E> it = iterator();
+    while (it.hasNext()) {
+        it.next();
+        it.remove();
+    }
+}
+```
+
+下面是 ArrayList 迭代器的 remove 方法。
+
+```java
+public void remove() {
+    if (lastRet < 0)
+        throw new IllegalStateException();
+    checkForComodification();
+
+    try {
+        // 调用正常的 remove 方法删除元素
+        ArrayList.this.remove(lastRet);
+        cursor = lastRet;
+        lastRet = -1;
+        // 因为迭代器在遍历的时候通过 expectedModCount 和 modCount 来判断内容是否有变动
+        // 这个地方更新 expectedModCount 正常情况可以避免 ConcurrentModificationException
+        expectedModCount = modCount;
+    } catch (IndexOutOfBoundsException ex) {
+        throw new ConcurrentModificationException();
+    }
+}
 ```
 
 ## `forEach(Consumer<? super T> action)`
@@ -45,12 +116,12 @@
 对与集合中的每个元素，执行 action 所定义的操作，与 lambda 表达式结合可以写出很简洁的代码。
 
 ```java
-    @Test
-    public void test3() {
-        // 对与 list 中的每一个元素，先打印数据元素的两倍，再打印一个 andThen
-        list.forEach(((Consumer<Integer>) integer -> LOGGER.debug(integer * 2))
-            .andThen(t -> LOGGER.debug("andThen")));
-    }
+@Test
+public void test3() {
+    // 对与 list 中的每一个元素，先打印数据元素的两倍，再打印一个 andThen
+    list.forEach(((Consumer<Integer>) integer -> LOGGER.debug(integer * 2))
+        .andThen(t -> LOGGER.debug("andThen")));
+}
 ```
 
 ## `spliterator()`
