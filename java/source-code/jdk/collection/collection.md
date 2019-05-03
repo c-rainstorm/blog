@@ -27,7 +27,6 @@
   - [`stream()`](#stream)
   - [`toArray()`](#toarray)
     - [源码实现](#%E6%BA%90%E7%A0%81%E5%AE%9E%E7%8E%B0-3)
-  - [`toArray(T[] a)`](#toarrayt-a)
 
 ---
 
@@ -304,8 +303,6 @@ private static <T> T[] finishToArray(T[] r, Iterator<?> it) {
     return (i == r.length) ? r : Arrays.copyOf(r, i);
 }
 ```
-
-## `toArray(T[] a)`
 
 [1]:https://docs.oracle.com/javase/8/docs/api/java/util/Collection.html "Java™  8 - Collection<E>"
 [2]:https://docs.oracle.com/javase/8/docs/technotes/guides/collections/overview.html "Collections Framework Overview"
