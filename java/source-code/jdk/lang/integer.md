@@ -8,6 +8,8 @@
   - [`Integer 缓存`](#integer-%E7%BC%93%E5%AD%98)
     - [源码分析](#%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90)
     - [测试样例](#%E6%B5%8B%E8%AF%95%E6%A0%B7%E4%BE%8B)
+  - [`toString()`](#tostring)
+    - [测试样例](#%E6%B5%8B%E8%AF%95%E6%A0%B7%E4%BE%8B-1)
   - [参考](#%E5%8F%82%E8%80%83)
 
 ---
@@ -121,6 +123,89 @@ false
 false
 ```
 
+## `toString()`
+
+借鉴 JDK 的写法我自己写了一下自己的 toString() 方法，测试结果见下个小节
+
+```java
+static void getChars(int i, int index, char[] buf) {
+    int q, r;
+    int charPos = index;
+    char sign = 0;
+
+    if (i < 0) {
+      sign = '-';
+      i = -i;
+    }
+
+    // Generate two digits per iteration
+    while (i >= 65536) {
+      // 每次处理两位数字
+      q = i / 100;
+    // really: r = i - (q * 100);
+      r = i - ((q << 6) + (q << 5) + (q << 2));
+      i = q;
+      buf [--charPos] = DigitOnes[r];
+      buf [--charPos] = DigitTens[r];
+    }
+
+    // Fall thru to fast mode for smaller numbers
+    // assert(i <= 65536, i);
+    for (;;) {
+      // (double)52429/2^19 == 0.100000381469 相当于原来数值除以10
+      q = (i * 52429) >>> (16+3);
+      r = i - ((q << 3) + (q << 1));  // r = i-(q*10) ...
+      buf [--charPos] = digits [r];
+      i = q;
+      if (i == 0) break;
+    }
+    if (sign != 0) {
+      buf [--charPos] = sign;
+    }
+}
+```
+
+### 测试样例
+
+完整测试代码可在 [furry-octo-doodle](https://github.com/c-rainstorm/furry-octo-doodle) 仓库的 `me.rainstorm.fod.lang.IntegerTest` 中找到。
+
+测试机器：MacBook Pro (15-inch, 2017) 2.8 GHz Intel Core i7, 16 GB 2133 MHz LPDDR3
+
+```java
+private static void getChars(int i, int index, char[] buf) {
+    int q, r;
+    int charPos = index;
+
+    if (i < 0) {
+        i = -i;
+        buf[0] = '-';
+    }
+
+    while (i != 0) {
+        // 每一位统一除 10
+        q = i / 10;
+        r = i - ((q << 3) + (q << 1));
+        i = q;
+        buf[--charPos] = DIGIT_ONES[r];
+    }
+}
+```
+
+每个量级测10次，去掉一个最大值，去掉一个最小值，剩余8次取平均值，单位为毫秒
+
+代码平均耗时 - int 上界 65535
+|代码|100|1000|10000|100000|1000000|10000000|100000000|
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+|JDK|1-2|1-2|6.5|25.125|86.875|437.5|3042.125|
+|自己的实现|0-1|1-2|6.37|21.25|85.25|449.125|3603.875|
+
+代码平均耗时 - int 上界 Integer.MAX_VALUE
+|代码|100|1000|10000|100000|1000000|10000000|100000000|
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+|JDK|0-1|1.625|8.5|40.375|88.875|644.875|4210.75|
+|自己的实现|0-1|1.875|8.125|26.5|113|631.5|4777.875|
+
 ## 参考
 
-[[FYI] 关于Integer的自动缓存大小 - RednaxelaFX](https://rednaxelafx.iteye.com/blog/680746)
+1. [[FYI] 关于Integer的自动缓存大小 - RednaxelaFX](https://rednaxelafx.iteye.com/blog/680746)
+2. [java.lang.Integer源码精读(一)](https://www.jianshu.com/p/02c1d9092347)
