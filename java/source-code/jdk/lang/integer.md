@@ -10,6 +10,9 @@
     - [测试样例](#%E6%B5%8B%E8%AF%95%E6%A0%B7%E4%BE%8B)
   - [`toString()`](#tostring)
     - [测试样例](#%E6%B5%8B%E8%AF%95%E6%A0%B7%E4%BE%8B-1)
+  - [`highestOneBit()`](#highestonebit)
+  - [`lowestOneBit()`](#lowestonebit)
+  - [`rotateLeft()`](#rotateleft)
   - [参考](#%E5%8F%82%E8%80%83)
 
 ---
@@ -204,6 +207,52 @@ private static void getChars(int i, int index, char[] buf) {
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 |JDK|0-1|1.625|8.5|40.375|88.875|644.875|4210.75|
 |自己的实现|0-1|1.875|8.125|26.5|113|631.5|4777.875|
+
+## `highestOneBit()`
+
+```java
+public static int highestOneBit(int i) {
+    // HD, Figure 3-1
+    // 最高位右侧全部置为1
+    i |= (i >>  1);
+    i |= (i >>  2);
+    i |= (i >>  4);
+    i |= (i >>  8);
+    i |= (i >> 16);
+    // 去掉最高位右侧所有1
+    return i - (i >>> 1);
+}
+```
+
+## `lowestOneBit()`
+
+获取最低位。利用的是补码的性质。
+
+最低位的1 右侧必然全部为0，取负数以后最低位的1置为0，右侧0全部置为1，然后加一，所有1都会进位，然后原来最低位的1 又从0变为1了，取 & 操作，可以去掉前面的所有 1，从而得到最低位的1.
+举个例子
+
+2
+2 的二进制是  10
+-2 的二进制是  1111110 （高位补1）
+
+2 & -2 = 2
+
+```java
+public static int lowestOneBit(int i) {
+    // HD, Section 2-1
+    return i & -i;
+}
+```
+
+## `rotateLeft()`
+
+```java
+public static int rotateLeft(int i, int distance) {
+    // i << distance 得到新值的高 32-dis 位
+    // i >>> -distance == i >>> (32 - distance)，得到新增低 distance 位
+    return (i << distance) | (i >>> -distance);
+}
+```
 
 ## 参考
 
