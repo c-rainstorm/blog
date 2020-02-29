@@ -1,0 +1,26 @@
+@startuml jsr107-core-interface-class-diagram
+
+interface CachingProvider
+interface CacheManager
+interface Cache
+interface Entry
+interface ExpiryPolicy
+
+CachingProvider o- CacheManager : manage 0..* >
+ExpiryPolicy -o Cache
+CacheManager "1" o-- "0..*" Cache
+Cache o- Entry : manage 0..* >
+
+note right of CacheManager
+
+该图基于 Ehcache 3.8 绘制
+作为规范的补充材料。
+
+end note
+
+footer
+figure 1 - jsr107-core-interface
+https://github.com/c-rainstorm/blog
+endfooter
+
+@enduml
