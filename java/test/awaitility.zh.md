@@ -106,7 +106,6 @@ private Callable<Integer> userRepositorySize() {
 publish(new AddUserMessage("User 1"), new AddUserMessage("User 2"), new AddUserMessage("User 3"));
 ```
 
-We now reuse the `userRepositorySize` "condition supplier" and simply update the Hamcrest matcher:
 我们现在重用 `userRepositorySize`，只需更新 Hamcrest 匹配器：
 
 ```java
@@ -141,7 +140,7 @@ await().until( fieldIn(object).ofType(int.class).andAnnotatedWith(MyAnnotation.c
 
 ## Atomic, Adders and Accumulators
 
-If you're using [Atomic](http://download.oracle.com/javase/1,5.0/docs/api/java/util/concurrent/atomic/package-summary.html) structures Awaitility provides a simple way to wait until they match a specific value:
+如果您正在使用[Atomic](http://download.oracle.com/javase/1,5.0/docs/api/java/util/concurrent/atomic/package-summary.html)数据结构，Awaitility 提供了一种简单的方法来等待它们匹配特定值：
 
 ```java
 AtomicInteger atomic = new AtomicInteger(0);
