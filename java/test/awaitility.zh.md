@@ -502,7 +502,7 @@ new Duration(5, SECONDS).plus(17, MILLISECONDS);
 
 ## Important
 
-等待性并不能确保线程安全或线程同步！这是你的责任！确保您的代码已正确同步，或者您正在使用线程安全的数据结构，例如volatile字段或类，例如 `AtomicInteger` 和 `ConcurrentHashMap`。
+Awaitility 并不能确保线程安全或线程同步！这是你的责任！确保您的代码已正确同步，或者使用线程安全的数据结构，例如volatile字段或类，例如 `AtomicInteger` 和 `ConcurrentHashMap`。
 
 ## Links and code examples
 
