@@ -41,6 +41,8 @@
         │   │   ├── <a href="./java/cache/caffeine.zh.md">caffeine.zh.md</a><br>
         │   │   ├── <a href="./java/cache/guava_cache.zh.md">guava_cache.zh.md</a><br>
         │   │   └── <a href="./java/cache/jsr107.zh.md">jsr107.zh.md</a><br>
+        │   ├── <a href="./java/code-generate/">code-generate</a><br>
+        │   │   └── <a href="./java/code-generate/javapoet.zh.md">javapoet.zh.md</a><br>
         │   ├── <a href="./java/java.lang.String.md">java.lang.String.md</a><br>
         │   ├── <a href="./java/java.math.BigDecimal.md">java.math.BigDecimal.md</a><br>
         │   ├── <a href="./java/source-code/">source-code</a><br>
