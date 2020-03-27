@@ -48,10 +48,6 @@
         │   ├── <a href="./java/source-code/">source-code</a><br>
         │   │   └── <a href="./java/source-code/jdk/">jdk</a><br>
         │   │   &nbsp;&nbsp;&nbsp; ├── <a href="./java/source-code/jdk/collection/">collection</a><br>
-        │   │   &nbsp;&nbsp;&nbsp; │   ├── <a href="./java/source-code/jdk/collection/Iterable.md">Iterable.md</a><br>
-        │   │   &nbsp;&nbsp;&nbsp; │   ├── <a href="./java/source-code/jdk/collection/collection.md">collection.md</a><br>
-        │   │   &nbsp;&nbsp;&nbsp; │   ├── <a href="./java/source-code/jdk/collection/hashMap%E8%AF%A6%E8%A7%A3.md">hashMap详解.md</a><br>
-        │   │   &nbsp;&nbsp;&nbsp; │   └── <a href="./java/source-code/jdk/collection/java-collection-framework.md">java-collection-framework.md</a><br>
         │   │   &nbsp;&nbsp;&nbsp; └── <a href="./java/source-code/jdk/lang/">lang</a><br>
         │   │   &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; └── <a href="./java/source-code/jdk/lang/integer.md">integer.md</a><br>
         │   ├── <a href="./java/test/">test</a><br>
