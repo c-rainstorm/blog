@@ -1,0 +1,49 @@
+@startuml java-collection-framework-set
+
+interface Collection<E>
+    interface Set<E>
+    class AbstractSet<E>
+        class CopyOnWriteArraySet<E> #Darkorange
+        class EnumSet<E extends Enum<E>>
+            class RegularEnumSet<E extends Enum<E>>
+            class JumboEnumSet<E extends Enum<E>>
+        class HashSet<E>
+            class LinkedHashSet<E>
+        interface SortedSet<E>
+            interface NavigableSet<E>
+                class TreeSet<E>
+                class ConcurrentSkipListSet<E> #Darkorange
+
+
+Collection <.. AbstractCollection
+AbstractCollection <|- AbstractSet
+
+Collection <|- Set
+Set <.. AbstractSet
+
+AbstractSet <|-- HashSet
+HashSet <|-- LinkedHashSet
+
+AbstractSet <|- TreeSet
+Set <|- SortedSets
+SortedSet <|- NavigableSet
+NavigableSet <.. TreeSet
+
+AbstractSet <|-- CopyOnWriteArraySet
+
+AbstractSet <|-- ConcurrentSkipListSet
+NavigableSet <.. ConcurrentSkipListSet
+
+note bottom of ConcurrentSkipListSet
+ 深色表示类在Concurrent包
+end note
+
+AbstractSet <|-- EnumSet
+EnumSet <|-- RegularEnumSet
+EnumSet <|-- JumboEnumSet
+
+caption Java 集合框架 Set 模块
+
+right footer https://github.com/c-rainstorm/blog 转载请注明出处
+
+@enduml

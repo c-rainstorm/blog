@@ -1,0 +1,32 @@
+@startuml java-collection-framework-list
+
+interface Collection<E>
+    class AbstractCollection<E>
+    interface List<E>
+        class CopyOnWriteArrayList<E>
+        class AbstractList<E>
+            class ArrayList<E>
+            class AbstractSequentialList<E>
+                class LinkedList<E>
+            class Vector<E>
+                class Stack<E>
+
+Collection <|.. List
+List <-- CopyOnWriteArrayList
+
+Collection <-- AbstractCollection
+AbstractCollection <|-- AbstractList
+
+List <-- AbstractList
+AbstractList <|-- Vector
+Vector <|-- Stack
+AbstractList <|-- ArrayList
+AbstractList <|-- AbstractSequentialList
+AbstractSequentialList <|-- LinkedList
+
+
+caption Java 集合框架 list 模块
+
+right footer https://github.com/c-rainstorm/blog 转载请注明出处
+
+@enduml

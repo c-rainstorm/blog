@@ -1,0 +1,58 @@
+@startuml java-collection-framework-queue-deque
+
+interface Queue<E>
+    class ConcurrentLinkedQueue<E> #Darkorange
+    class PriorityQueue<E>
+    interface BlockingQueue<E> #Darkorange
+        class ArrayBlockingQueue<E> #Darkorange
+        class LinkedBlockingQueue<E> #Darkorange
+        class DelayQueue<E extends Delayed> #Darkorange
+        class SynchronousQueue<E>  #Darkorange
+        class PriorityBlockingQueue<E>  #Darkorange
+    interface Deque<E>
+        class ArrayDeque<E>
+        interface BlockingDeque<E> #Darkorange
+            class LinkedBlockingDeque<E> #Darkorange
+            class ConcurrentLinkedDeque<E> #Darkorange
+    interface TransferQueue<E> #Darkorange
+        class LinkedTransferQueue<E> #Darkorange
+
+Queue <|. Deque
+Deque <- LinkedList
+
+ConcurrentLinkedQueue --> Queue
+PriorityQueue --> Queue
+
+Queue <.. BlockingQueue
+ArrayBlockingQueue ..> BlockingQueue
+
+LinkedBlockingQueue ..> BlockingQueue
+
+DelayQueue .> BlockingQueue
+
+BlockingQueue <.. SynchronousQueue
+
+BlockingQueue <.. PriorityBlockingQueue
+
+ArrayDeque --> Deque
+
+Deque <|.. BlockingDeque
+BlockingQueue <|. BlockingDeque
+
+BlockingDeque <. LinkedBlockingDeque
+
+BlockingDeque <.. ConcurrentLinkedDeque
+
+BlockingQueue <|.. TransferQueue
+TransferQueue <-- LinkedTransferQueue
+
+
+note bottom of ConcurrentLinkedDeque
+ 深色表示类在Concurrent包
+end note
+
+caption Java 集合框架 queue-deque 模块
+
+right footer https://github.com/c-rainstorm/blog 转载请注明出处
+
+@enduml

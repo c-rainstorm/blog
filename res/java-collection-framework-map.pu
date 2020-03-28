@@ -1,0 +1,48 @@
+@startuml java-collection-framework-map
+
+interface Map<K,V>
+    interface SortedMap<K,V>
+        interface NavigableMap<K,V>
+            class TreeMap<K,V>
+    class AbstractMap<K,V>
+        class WeakHashMap<K,V>
+        class HashMap<K,V>
+            class LinkedHashMap<K,V>
+        class EnumMap<K extends Enum<K>, V>
+        class IdentityHashMap<K,V>
+    interface ConcurrentMap<K,V> #Darkorange
+        class ConcurrentHashMap<K,V> #Darkorange
+        interface ConcurrentNavigableMap<K,V> #Darkorange
+            class ConcurrentSkipListMap<K,V> #Darkorange
+
+SortedMap .|>  Map
+Map <.. AbstractMap
+Map <|. ConcurrentMap
+
+NavigableMap .|> SortedMap
+NavigableMap <.. TreeMap
+
+AbstractMap <|-- HashMap
+HashMap <|-- LinkedHashMap
+
+AbstractMap <|-- WeakHashMap
+EnumMap -|> AbstractMap
+AbstractMap <|-- IdentityHashMap
+
+AbstractMap <|-- ConcurrentHashMap
+ConcurrentMap <.. ConcurrentHashMap
+
+ConcurrentMap <|. ConcurrentNavigableMap
+
+AbstractMap <|- ConcurrentSkipListMap
+ConcurrentNavigableMap <.. ConcurrentSkipListMap
+
+note bottom of ConcurrentHashMap
+ 深色表示类在Concurrent包
+end note
+
+caption Java 集合框架 Map 模块
+
+right footer https://github.com/c-rainstorm/blog 转载请注明出处
+
+@enduml
