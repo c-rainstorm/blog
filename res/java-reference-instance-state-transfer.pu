@@ -1,0 +1,37 @@
+@startuml java-reference-instance-state-transfer
+
+' Active
+' Pending
+' Enqueued
+' Inactive
+
+[*] --> Active
+Active : 新创建的 Reference 实例\nnew SoftReference()
+
+note bottom of Pending
+
+SoftReference - GC 时触发状态变更
+WeakReference - 非 GC，但是被GC扫描线程扫到了
+
+end note
+
+Active --> Pending : by GC
+
+Pending : 表示引用可以被回收了，\n通知用户层对引用做最后的处理
+
+Active --> Inactive : by GC
+
+Pending -right-> Enqueued : by ReferenceHandler thread
+
+Enqueued -right-> Inactive : 从 ReferenceQueue 移除时\n 一般由用户线程处理\n比如 WeakHashMap#expungeStaleEntries
+
+Inactive : 这个状态 GC 会释放对象
+
+Inactive --> [*]
+
+
+caption Java引用实例状态转换
+
+right footer https://github.com/c-rainstorm/blog 转载请注明出处
+
+@enduml
