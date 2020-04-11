@@ -1,0 +1,19 @@
+@startuml collection-hashmap-node-class
+
+
+interface Map.Entry<K,V>
+class HashMap.Node<K,V>
+class HashMap.TreeNode<K,V>
+class LinkedListHashMap.Entry<K,V>
+
+
+Map.Entry <.. HashMap.Node
+HashMap.Node <-- LinkedListHashMap.Entry
+LinkedListHashMap.Entry <-- HashMap.TreeNode
+
+
+caption hashmap节点继承结构类图
+
+right footer https://github.com/c-rainstorm/blog 转载请注明出处
+
+@enduml
